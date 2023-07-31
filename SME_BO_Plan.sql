@@ -48,7 +48,7 @@ select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_an
 	case when contract_status = 'Cancelled' then 'Cancelled' else null end `Cancelled Result`, 
 	case when rank_update in ('S','A','B','C') then 1 else 0 end `SABC`, 
 	case when rank_update in ('C') then 1 else 0 end `C`, 
-	sme.sales_cc `sales_cc`
+	sme.sales_cc `sales_cc`, bp.name `id`
 from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
 order by bp.name asc;
 
