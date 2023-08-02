@@ -39,6 +39,26 @@ update tabSME_BO_and_Plan set normal_bullet = normalbullet, disbursement_date_pa
 alter table tabSME_BO_and_Plan drop column normalbullet;
 alter table tabSME_BO_and_Plan drop column disbursement_datepay_date;
 
+-- add datetime
+SELECT ADDTIME("10:54:21", "00:10:00") as Updated_time ;
+SELECT ADDTIME("2023-08-01 12:55:45.212689000", "02:00:00") as Updated_time ;
+-- deduct datetime
+SELECT SUBTIME('06:14:03', '15:50:90') AS Result;
+SELECT SUBTIME('2019-05-01 11:15:45', '20 04:02:01') AS Result; 
+
+select date_format('2023-08-02', '%c'); -- Numeric month name (0 to 12) https://www.w3schools.com/sql/func_mysql_date_format.asp
+select date_format('2023-08-02', '%e'); -- Day of the month as a numeric value (0 to 31) https://www.w3schools.com/sql/func_mysql_date_format.asp
+
+select * from tabSME_BO_and_Plan tsbap order by name desc;
+select * from tabSME_BO_and_Plan tsbap where staff_no = '1180';
+select * from tabUser tu ;
+
+alter table tabSME_BO_and_Plan auto_increment=11549;
+
+alter table tabSME_BO_and_Plan drop column priority_for_visit;
+
+
+
 -- tabSME_BO_and_Plan -> test SME_BO_and_Plan https://docs.google.com/spreadsheets/d/1dqrXSSNq6ACAKzOuep62Qxl8ebKF9SUI3Z5v6e6f9sE/edit#gid=1867067672
 select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`,
 	sme.dept `DEPT`, sme.sec_branch `SECT`, sme.unit_no `Unit_no`, sme.unit `Unit`,
