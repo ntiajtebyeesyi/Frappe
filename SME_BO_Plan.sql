@@ -54,7 +54,6 @@ select * from tabSME_BO_and_Plan tsbap where staff_no = '1180';
 select * from tabUser tu ;
 
 alter table tabSME_BO_and_Plan auto_increment=11549;
-
 alter table tabSME_BO_and_Plan drop column priority_for_visit;
 
 
@@ -68,7 +67,9 @@ select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_an
 	case when contract_status = 'Cancelled' then 'Cancelled' else null end `Cancelled Result`, 
 	case when rank_update in ('S','A','B','C') then 1 else 0 end `SABC`, 
 	case when rank_update in ('C') then 1 else 0 end `C`, 
-	sme.sales_cc `sales_cc`, bp.name `id`
+	sme.sales_cc `sales_cc`, bp.name `id`,
+	concat( date_format(bp.visit_date, '%c'),'-',date_format(bp.visit_date, '%e'),'-', case when bp.priority_to_visit = '' then 1 else bp.priority_to_visit end ) `Visit plan M-D-P`,
+	concat('=hyperlink(', concat('"http://13.250.153.252:8000/app/sme_bo_and_plan/', name) ,'","', bp.customer_name, '")') `For visit `
 from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
 order by bp.name asc;
 
