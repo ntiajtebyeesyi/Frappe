@@ -53,15 +53,6 @@ from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
 order by bp.name asc;
 
 
--- tabSME_BO_and_Plan -> test SME_BO_and_Plan https://docs.google.com/spreadsheets/d/1dqrXSSNq6ACAKzOuep62Qxl8ebKF9SUI3Z5v6e6f9sE/edit#gid=1867067672
-select date_format(bp.modified, '%Y-%m-%d %H:%m:%s') `Timestamp`, sme.dept `DEPT`, sme.unit_no `Unit_no`, sme.unit `Unit`, sme.sales_cc `sales_cc`,
-	bp.staff_no `Staff No`, bp.staff_name `Staff Name`, `point` , `type` , bp.usd_amount , bp.customer_name , 
-	bp.ringi_status , bp.ringi_comment , bp.disbursement_date_pay_date , bp.contract_status , bp.contract_comment , bp.customer_card , bp.rank1 , bp.approch_list , bp.rank_update , 
-	bp.visit_date , bp.visit_or_not ,
-	case when contract_status = 'Cancelled' then 'Cancelled' else null end `Cancelled Result`, 
-	case when rank_update in ('S','A','B','C') then 1 else 0 end `SABC`, 
-	case when rank_update in ('C') then 1 else 0 end `C`
-from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
-order by bp.name asc;
+
 
 
