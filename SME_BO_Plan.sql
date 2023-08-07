@@ -81,6 +81,24 @@ from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
 order by bp.name asc;
 
 
+-- rank F yesterday
+select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`,
+	sme.dept `DEPT`, sme.sec_branch `SECT`, sme.unit_no `Unit_no`, sme.unit `Unit`,
+	bp.staff_no `Staff No`, sme.staff_name `Staff Name`, `point` , `type` , bp.usd_amount , bp.normal_bullet, bp.customer_name, 
+	bp.rank1 , bp.rank_update, regexp_replace(bp.sp_cc , '[^[:digit:]]', '') `Sales promotion CC`, bp.sp_cc, bp.rank_update_sp_cc , 
+	bp.ringi_status, bp.creation `Date created`
+from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
+where date_format(bp.creation, '%Y-%m-%d') = '2023-08-05' and bp.rank1 = 'F' 
+order by sme.unit_no , bp.staff_no ;
 
+-- rank SABC yesterday
+select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`,
+	sme.dept `DEPT`, sme.sec_branch `SECT`, sme.unit_no `Unit_no`, sme.unit `Unit`,
+	bp.staff_no `Staff No`, sme.staff_name `Staff Name`, `point` , `type` , bp.usd_amount , bp.normal_bullet, bp.customer_name, 
+	bp.rank1 , bp.rank_update, bp.credit `Sales promotion CC`, bp.credit, bp.rank_of_credit ,
+	bp.ringi_status, bp.creation `Date created`
+from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
+where date_format(bp.creation, '%Y-%m-%d') = '2023-08-05' and bp.rank1 in ('S','A','B','C')
+order by sme.unit_no , bp.staff_no ;
 
 
