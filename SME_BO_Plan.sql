@@ -72,7 +72,8 @@ select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_an
 	regexp_replace(bp.sp_cc , '[^[:digit:]]', '') `Sales promotion CC`,
 	bp.rank_update_sp_cc ,
 	regexp_replace(bp.double_count , '[^[:digit:]]', '') `Double count person`,
-	bp.creation `Date created`
+	regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') `CC`,
+	date_format(bp.creation, '%Y-%m-%d') `Date created`
 	-- concat('=hyperlink(', concat('"http://13.250.153.252:8000/app/sme_bo_and_plan/', name) ,'","', bp.customer_name, '")') `For visit`
 from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
 order by bp.name asc;
