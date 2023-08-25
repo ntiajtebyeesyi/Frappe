@@ -57,7 +57,7 @@ alter table tabSME_BO_and_Plan auto_increment=11549;
 alter table tabSME_BO_and_Plan drop column priority_for_visit;
 
 
-
+-- tabSME_BO_and_Plan -> test SME_BO_and_Plan https://docs.google.com/spreadsheets/d/1dqrXSSNq6ACAKzOuep62Qxl8ebKF9SUI3Z5v6e6f9sE/edit#gid=1867067672
 select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`,
 	sme.dept `DEPT`, sme.sec_branch `SECT`, sme.unit_no `Unit_no`, sme.unit `Unit`,
 	bp.staff_no `Staff No`, sme.staff_name `Staff Name`, case when bp.`point` = '0.5' then 0.5 when bp.double_count != '' then 0.5 else 1 end `point`, 
@@ -66,30 +66,31 @@ select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_an
 	bp.ringi_status , bp.ringi_comment , bp.disbursement_date_pay_date , bp.contract_status , bp.contract_comment , bp.customer_card , bp.rank1 , bp.approch_list , bp.rank_update , 
 	bp.visit_date , bp.visit_or_not ,
 	case when contract_status = 'Cancelled' then 'Cancelled' else null end `Cancelled Result`, 
-	case when bp.rank_update in ('S','A','B','C') then 1 else 0 end `SABC`, 
-	case when bp.rank_update in ('C') then 1 else 0 end `C`, 
+	case when rank_update in ('S','A','B','C') then 1 else 0 end `SABC`, 
+	case when rank_update in ('C') then 1 else 0 end `C`, 
 	sme.sales_cc `sales_cc`, bp.name `id`,
 	concat(bp.staff_no,'-', date_format(bp.visit_date, '%c'),'-',date_format(bp.visit_date, '%e'),'-', case when bp.priority_to_visit = '' then 1 else bp.priority_to_visit end ) `Visit plan M-D-P`,
 	regexp_replace(bp.sp_cc , '[^[:digit:]]', '') `Sales promotion CC`,
 	bp.rank_update_sp_cc ,
 	case when left(bp.double_count, locate('-', bp.double_count)-2) = '' then bp.double_count else left(bp.double_count, locate('-', bp.double_count)-2) end `Double count person`,
 	regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') `CC`,
-	bp.creation `Date created`,
+	date_format(bp.creation, '%Y-%m-%d') `Date created`,
 	case when bp.rank1 in ('S','A','B','C') then 1 else 0 end `rank1_SABC`
 	-- concat('=hyperlink(', concat('"http://13.250.153.252:8000/app/sme_bo_and_plan/', name) ,'","', bp.customer_name, '")') `For visit`
 from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
+where bp.rank_update in ('S','A','B','C', 'F')
 order by bp.name asc;
 
 
 -- rank F yesterday
-select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`,
+select date_format(bp.creation, '%Y-%m-%d') `Date created`, concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`,
 	sme.dept `DEPT`, sme.sec_branch `SECT`, sme.unit_no `Unit_no`, sme.unit `Unit`,
-	bp.staff_no `Staff No`, sme.staff_name `Staff Name`, `point` , `type` , bp.usd_amount , bp.normal_bullet, bp.customer_name, 
-	bp.rank1 , bp.rank_update, regexp_replace(bp.sp_cc , '[^[:digit:]]', '') `Sales promotion CC`, bp.sp_cc, bp.rank_update_sp_cc , 
-	bp.ringi_status, bp.creation `Date created`
+	bp.staff_no `Staff No`, sme.staff_name `Staff Name`, bp.double_count, bp.callcenter_of_sales , bp.`type` , bp.usd_amount , bp.normal_bullet, bp.customer_name, 
+	bp.rank1 , bp.rank_update, bp.ringi_status, bp.contract_status , bp.sp_cc `SP CC`, bp.rank_update_sp_cc `Rank of SP CC`, 
+	bp.modified `Date updated`, case when bp.modified < date(now()) then 'Pending' else UL
 from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
-where date_format(bp.creation, '%Y-%m-%d') = '2023-08-05' and bp.rank1 = 'F' 
-order by sme.unit_no , bp.staff_no ;
+where date_format(bp.creation, '%Y-%m-%d') = '2023-08-21' and bp.rank1 = 'F' and bp.`type` in ('New', 'Dor','Inc')
+order by sme.unit_no , bp.staff_no, bp.creation ;
 
 -- rank SABC yesterday
 select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`,
@@ -100,5 +101,25 @@ select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_an
 from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
 where date_format(bp.creation, '%Y-%m-%d') = '2023-08-05' and bp.rank1 in ('S','A','B','C')
 order by sme.unit_no , bp.staff_no ;
+
+
+-- visit result https://docs.google.com/spreadsheets/d/16W3U7r1WCSONrnFZdSXwb_1iNCbhCxCl2mmmWidhupI/edit#gid=266017824
+select bp.modified `Date`, bp.contract_no , bp.name `customer_id` , bp.customer_name , bp.customer_tel `phone1` , null `phone2`, bp.`type`,  sme.unit_no `Unit_no`, sme.unit `Unit`,
+	bp.staff_no `Staff No`, sme.staff_name `Staff Name`, bp.visit_date , null `The reason of visit`, left(bp.visit_or_not, locate('-', bp.visit_or_not)-2) `Visit or not`,
+	null `collateral`, null `Interested in product`, null `Negotiate with`, 
+	case when bp.rank_update = 'S' then 'S ຕ້ອງການເງິນໃນມື້ນີ້ມື້ອຶ່ນ' when bp.rank_update = 'A' then 'A ຕ້ອງການເງິນພາຍໃນອາທິດໜ້າ' when bp.rank_update = 'B' then 'B ຕ້ອງການເງິນພາຍໃນເດືອນນີ້'
+		when bp.rank_update = 'C' then 'C ຕ້ອງການເງິນພາຍໃນເດືອນໜ້າ' when bp.rank_update = 'F' then 'F ຮູ້ຂໍ້ມູນລົດແຕ່ຍັງບໍ່ຕ້ອງການ' 
+	end `Rank`,
+	null `Negotiations`, null `Negotiation documents`, null `Location`,
+	bp.disbursement_date_pay_date `Date will contract`, bp.usd_amount `Loan amount (USD)`, concat(bp.maker, ' ', bp.model) `Details of Collateral`, bp.usd_value `Asset value (USD)`
+from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
+where bp.visit_date >= '2023-08-24' and left(bp.visit_or_not, locate('-', bp.visit_or_not)-2) = 'Yes' and bp.visit_date is not null
+order by bp.visit_date ;
+
+update tabSME_BO_and_Plan set visit_or_not = 'No - ຍັງບໍ່ໄດ້ລົງຢ້ຽມຢາມ' where visit_date > date(now()) and visit_or_not = 'Yes - ຢ້ຽມຢາມແລ້ວ';
+
+
+
+
 
 
