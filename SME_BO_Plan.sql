@@ -75,7 +75,9 @@ select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_an
 	case when left(bp.double_count, locate('-', bp.double_count)-2) = '' then bp.double_count else left(bp.double_count, locate('-', bp.double_count)-2) end `Double count person`,
 	regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') `CC`,
 	date_format(bp.creation, '%Y-%m-%d') `Date created`,
-	case when bp.rank1 in ('S','A','B','C') then 1 else 0 end `rank1_SABC`
+	case when bp.rank1 in ('S','A','B','C') then 1 else 0 end `rank1_SABC`,
+	case when bp.contract_status = 'Contracted' then 'Contracted' when bp.contract_status = 'Cancelled' then 'Cancelled' else bp.rank_update end `Cancelled Result`,
+	concat(bp.maker, ' - ', bp.model) `collateral`, bp.`year` 
 	-- concat('=hyperlink(', concat('"http://13.250.153.252:8000/app/sme_bo_and_plan/', name) ,'","', bp.customer_name, '")') `For visit`
 from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
 where bp.rank_update in ('S','A','B','C', 'F')
