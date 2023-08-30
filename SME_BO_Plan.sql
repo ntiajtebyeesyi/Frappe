@@ -126,5 +126,20 @@ alter table tabSME_BO_and_Plan add column `rank_A_date` date default null;
 alter table tabSME_BO_and_Plan add column `rank_B_date` date default null;
 alter table tabSME_BO_and_Plan add column `rank_C_date`date default null;
 
+-- check and update the data for each rank
+select name, rank1 , rank_update , rank_S_date , rank_A_date , rank_B_date , rank_C_date from tabSME_BO_and_Plan where rank_update in ('S','A','B','C');
+
+update tabSME_BO_and_Plan 
+	set rank_S_date = case when rank_update = 'S' then date_format(modified, '%Y-%m-%d') else rank_S_date end,
+	rank_A_date = case when rank_update = 'A' then date_format(modified, '%Y-%m-%d') else rank_A_date end,
+	rank_B_date = case when rank_update = 'B' then date_format(modified, '%Y-%m-%d') else rank_B_date end,
+	rank_C_date = case when rank_update = 'C' then date_format(modified, '%Y-%m-%d') else rank_C_date end
+-- where name >= 15544
+
+
+
+
+
+
 
 
