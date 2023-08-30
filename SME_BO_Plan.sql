@@ -121,7 +121,10 @@ order by bp.visit_date ;
 update tabSME_BO_and_Plan set visit_or_not = 'No - ຍັງບໍ່ໄດ້ລົງຢ້ຽມຢາມ' where visit_date > date(now()) and visit_or_not = 'Yes - ຢ້ຽມຢາມແລ້ວ';
 
 
-
+alter table tabSME_BO_and_Plan add column `rank_S_date` date default null;
+alter table tabSME_BO_and_Plan add column `rank_A_date` date default null;
+alter table tabSME_BO_and_Plan add column `rank_B_date` date default null;
+alter table tabSME_BO_and_Plan add column `rank_C_date`date default null;
 
 
 
