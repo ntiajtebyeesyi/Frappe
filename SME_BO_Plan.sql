@@ -137,8 +137,25 @@ update tabSME_BO_and_Plan
 -- where name >= 15544
 
 
+-- ______________________________________________________________ -- add column for happy call 2023-09-10 ______________________________________________________________
+alter table tabSME_BO_and_Plan add column `list_type` varchar(255) default null;
+alter table tabSME_BO_and_Plan add column `contract_no_old` int(11) default null;
 
+-- Dormant 
+select * from tabSME_BO_and_Plan tsbap where name between 16880 and 28849;
 
+update tabSME_BO_and_Plan set creation = now(), modified = now(), modified_by = 'Administrator', owner = 'Administrator'
+where name between 16880 and 28849;
+
+-- Existing 
+select * from tabSME_BO_and_Plan tsbap where name between 28850 and 40822;
+
+update tabSME_BO_and_Plan set creation = now(), modified = now(), modified_by = 'Administrator', owner = 'Administrator'
+where name between 28850 and 36345;
+
+alter table tabSME_BO_and_Plan change name name bigint(20) auto_increment ; -- to make your form can add new record after you import data by cvs
+alter table tabSME_BO_and_Plan auto_increment=36346;
+insert into sme_bo_and_plan_id_seq select 36346, minimum_value, maximum_value, start_value, increment, cache_size, cycle_option, cycle_count from sme_bo_and_plan_id_seq;
 
 
 
