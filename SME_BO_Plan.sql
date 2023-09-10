@@ -153,8 +153,8 @@ select * from tabSME_BO_and_Plan tsbap where name between 28850 and 40822;
 update tabSME_BO_and_Plan set creation = now(), modified = now(), modified_by = 'Administrator', owner = 'Administrator'
 where name between 28850 and 36345;
 
-alter table tabSME_BO_and_Plan change name name bigint(20) auto_increment ; -- to make your form can add new record after you import data by cvs
-alter table tabSME_BO_and_Plan auto_increment=36346;
+-- to make your form can add new record after you import data by cvs
+alter table tabSME_BO_and_Plan auto_increment=36346; -- next id
 insert into sme_bo_and_plan_id_seq select 36346, minimum_value, maximum_value, start_value, increment, cache_size, cycle_option, cycle_count from sme_bo_and_plan_id_seq;
 
 
