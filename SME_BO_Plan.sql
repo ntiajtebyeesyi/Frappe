@@ -159,6 +159,11 @@ insert into sme_bo_and_plan_id_seq select 36346, minimum_value, maximum_value, s
 
 
 -- _________________________________________________________ 200-3-3-1 _________________________________________________________
+-- after change this then need to update on form http://13.250.153.252:8000/app/doctype/SME_BO_and_Plan
+alter table tabSME_BO_and_Plan rename column `usd_amount` to `usd_loan_amount`;  
+alter table tabSME_BO_and_Plan rename column `province_and_city` to `real_estate_province_and_city`;
+
+
 -- export for 200-3-3-1 daily report
 select date_format(bp.creation, '%Y-%m-%d') `input_date`, 
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then bp.staff_no else regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') end `Staff No`, 
@@ -166,14 +171,12 @@ select date_format(bp.creation, '%Y-%m-%d') `input_date`,
 	bp.rank_update, left(bp.visit_or_not, locate('-', bp.visit_or_not)-2) `Visit or not`, bp.customer_tel `tel`, null `telno`, bp.customer_name ,
 	left(bp.address_province_and_city, locate('-', bp.address_province_and_city)-2) `province`, 
 	replace(bp.address_province_and_city, left(bp.address_province_and_city, locate('-', bp.address_province_and_city)+1), '')  `district`, bp.address_village , 
-	bp.maker, bp.model, bp.usd_amount, bp.disbursement_date_pay_date , bp.name `primary_key`, bp.`type` `contract_type`
+	bp.maker, bp.model, bp.usd_loan_amount, bp.disbursement_date_pay_date , bp.name `primary_key`, bp.`type` `contract_type`
 from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
 left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
 where date_format(bp.creation, '%Y-%m-%d') >= date(now()) and bp.rank_update in ('S', 'A', 'B', 'C', 'F', 'G') ;
 
 
 
--- after change this then need to update on form http://13.250.153.252:8000/app/doctype/SME_BO_and_Plan
-alter table tabSME_BO_and_Plan rename column `usd_amount` to `usd_loan_amount`;  
-alter table tabSME_BO_and_Plan rename column `province_and_city` to `real_estate_province_and_city`;
+
 
