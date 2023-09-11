@@ -174,7 +174,8 @@ select date_format(bp.creation, '%Y-%m-%d') `input_date`,
 	bp.maker, bp.model, bp.usd_loan_amount, bp.disbursement_date_pay_date , bp.name `primary_key`, bp.`type` `contract_type`
 from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
 left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
-where date_format(bp.creation, '%Y-%m-%d') >= date(now()) and bp.rank_update in ('S', 'A', 'B', 'C', 'F', 'G') ;
+where date_format(bp.creation, '%Y-%m-%d') >= date(now()) and bp.rank_update in ('S', 'A', 'B', 'C', 'F', 'G') 
+order by bp.name asc;
 
 
 
