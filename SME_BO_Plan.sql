@@ -178,6 +178,18 @@ where date_format(bp.creation, '%Y-%m-%d') >= date(now()) and bp.rank_update in 
 order by bp.name asc;
 
 
+-- _________________________________________________________ Dormant and Existing  _________________________________________________________
+--
+select name, staff_no, list_type, visit_or_not, visit_date, usd_loan_amount, contract_no, contract_no_old, case_no, customer_name, customer_tel, rank1, rank_update,
+	owner_staff_no, usd_loan_amount_of_old_contract, usd_principal_outstanding_amount_of_old_contract, usd_asset_value_amount_of_old_contract, business_type
+from tabSME_BO_and_Plan tsbap where list_type is not null and list_type = 'Dor_happy_call'
+
+
+alter table tabSME_BO_and_Plan add column owner_staff_no varchar(255) default null, 
+	add column usd_loan_amount_of_old_contract decimal(20,2) not null,
+	add column usd_principal_outstanding_amount_of_old_contract decimal(20,2) not null,
+	add column usd_asset_value_amount_of_old_contract decimal(20,2) not null,
+	add column business_type varchar(255) default null;
 
 
 
