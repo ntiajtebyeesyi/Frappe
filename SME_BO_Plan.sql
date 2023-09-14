@@ -185,11 +185,36 @@ select name, staff_no, list_type, visit_or_not, visit_date, usd_loan_amount, con
 from tabSME_BO_and_Plan tsbap where list_type is not null and list_type = 'Dor_happy_call'
 
 
+-- add col for happy call
 alter table tabSME_BO_and_Plan add column owner_staff_no varchar(255) default null, 
 	add column usd_loan_amount_of_old_contract decimal(20,2) not null default '0.00',
 	add column usd_principal_outstanding_amount_of_old_contract decimal(20,2) not null default '0.00',
 	add column usd_asset_value_amount_of_old_contract decimal(20,2) not null default '0.00',
 	add column business_type varchar(255) default null;
+
+
+-- create table for prepare import data from Excel file and update 
+create table `sme_temp_happycall` (
+	`contract_no` int(11) not null auto_increment,
+	`case_no` varchar(255) default null,
+	`list_type` varchar(255) not null,
+	`customer_name` varchar(255) default null,
+	`customer_tel` varchar(255) default null,
+	`visit_or_not` varchar(255) default null,
+	`visit_date` date default null,
+	`rank1` varchar(255) default null,
+	`rank_update` varchar(255) default null,
+	`usd_loan_amount` decimal(20,2) default null,
+	`usd_loan_amount_of_old_contract` decimal(20,2) default null,
+	`usd_principal_outstanding_amount_of_old_contract` decimal(20,2) default null,
+	`usd_asset_value_amount_of_old_contract` decimal(20,2) default null,
+	`business_type` varchar(255) default null,
+	`staff_no` varchar(255) default null,
+	`owner_staff_no` varchar(255) default null,
+	primary key (`contract_no`)
+) engine=InnoDB auto_increment=1 default charset=utf8;
+
+
 
 
 
