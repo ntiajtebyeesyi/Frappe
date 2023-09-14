@@ -186,9 +186,9 @@ from tabSME_BO_and_Plan tsbap where list_type is not null and list_type = 'Dor_h
 
 
 alter table tabSME_BO_and_Plan add column owner_staff_no varchar(255) default null, 
-	add column usd_loan_amount_of_old_contract decimal(20,2) not null,
-	add column usd_principal_outstanding_amount_of_old_contract decimal(20,2) not null,
-	add column usd_asset_value_amount_of_old_contract decimal(20,2) not null,
+	add column usd_loan_amount_of_old_contract decimal(20,2) not null default '0.00',
+	add column usd_principal_outstanding_amount_of_old_contract decimal(20,2) not null default '0.00',
+	add column usd_asset_value_amount_of_old_contract decimal(20,2) not null default '0.00',
 	add column business_type varchar(255) default null;
 
 
