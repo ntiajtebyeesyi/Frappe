@@ -194,7 +194,7 @@ alter table tabSME_BO_and_Plan add column owner_staff_no varchar(255) default nu
 
 
 -- create table for prepare import data from Excel file and update 
-create table `sme_temp_happycall` (
+create table `temp_sme_happycall` (
 	`contract_no` int(11) not null auto_increment,
 	`case_no` varchar(255) default null,
 	`list_type` varchar(255) not null,
