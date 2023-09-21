@@ -229,6 +229,19 @@ where date_format(bp.creation, '%Y-%m-%d') >= date(now()) and bp.rank_update in 
 order by bp.name asc;
 
 
-
+-- BO https://docs.google.com/spreadsheets/d/1rKhGY4JN5N0EZs8WiUC8dVxFAiwGrxcMp8-K_Scwlg4/edit#gid=1793628529&fvid=551853106
+select bp.staff_no, 1 `case`, case when bp.`type` = 'New' then 'NEW' when bp.`type` = 'Dor' then 'DOR' when bp.`type` = 'Inc' then 'INC' end `type`,
+	bp.usd_loan_amount, bp.case_no, bp.contract_no, bp.customer_name, 
+	case when bp.contract_status = 'Contracted' then 'Contracted' when bp.contract_status = 'Cancelled' then 'Cancelled' 
+		when bp.ringi_status = 'Approved' then 'APPROVED' when bp.ringi_status = 'Pending approval' then 'PENDING' 
+		when bp.ringi_status = 'Draft' then 'DRAFT' when bp.ringi_status = 'Not Ringi' then 'No Ringi' 
+	end `Now Result`, 
+	bp.disbursement_date_pay_date , 'ແຜນເພີ່ມ' `which`, bp.name 
+from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
+where (bp.rank_update in ('S','A','B','C') or bp.list_type is not null ) 
+	and case when bp.contract_status = 'Contracted' and bp.disbursement_date_pay_date < '2023-09-01' then 0 else 1 end != 0 -- if contracted before '2023-09-01' then not need
+	and date_format(bp.modified, '%Y-%m-%d') >= date(now()) and bp.disbursement_date_pay_date between '2023-09-18' and '2023-09-23'
+	and bp.ringi_status != 'Rejected'
+order by bp.name asc;
 
 
