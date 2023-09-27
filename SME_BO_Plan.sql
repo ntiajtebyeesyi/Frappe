@@ -188,7 +188,7 @@ left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]
 where bp.usd_loan_amount >= 100000;
 
 
-
+-- ______________________________________________________________ Check and Update set date for each rank ______________________________________________________________
 -- add these collumn for for Kawakatsu method 2023-08-30
 alter table tabSME_BO_and_Plan add column `rank_S_date` date default null;
 alter table tabSME_BO_and_Plan add column `rank_A_date` date default null;
@@ -202,8 +202,10 @@ update tabSME_BO_and_Plan
 	set rank_S_date = case when rank_update = 'S' then date_format(modified, '%Y-%m-%d') else rank_S_date end,
 	rank_A_date = case when rank_update = 'A' then date_format(modified, '%Y-%m-%d') else rank_A_date end,
 	rank_B_date = case when rank_update = 'B' then date_format(modified, '%Y-%m-%d') else rank_B_date end,
-	rank_C_date = case when rank_update = 'C' then date_format(modified, '%Y-%m-%d') else rank_C_date end
--- where name >= 15544
+	rank_C_date = case when rank_update = 'C' then date_format(modified, '%Y-%m-%d') else rank_C_date end,
+	rank_update = case when contract_status = 'Contracted' then 'S' else rank_update end,
+	ringi_status = case when contract_status = 'Contracted' then 'Approved' else ringi_status end,
+	rank1 = case when date_format(creation, '%Y-%m-%d') = date_format(modified, '%Y-%m-%d') then rank_update else rank1 end
 
 
 -- ______________________________________________________________ -- add column for happy call 2023-09-10 ______________________________________________________________
