@@ -155,7 +155,7 @@ from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
 where date_format(bp.creation, '%Y-%m-%d') = '2023-08-05' and bp.rank1 in ('S','A','B','C')
 order by sme.unit_no , bp.staff_no ;
 
-
+-- ______________________________________________________________ Visit ______________________________________________________________
 -- visit result https://docs.google.com/spreadsheets/d/16W3U7r1WCSONrnFZdSXwb_1iNCbhCxCl2mmmWidhupI/edit#gid=266017824
 select bp.modified `Date`, bp.contract_no , bp.name `customer_id` , bp.customer_name , bp.customer_tel `phone1` , null `phone2`, bp.`type`,  sme.unit_no `Unit_no`, sme.unit `Unit`,
 	bp.staff_no `Staff No`, sme.staff_name `Staff Name`, bp.visit_date , null `The reason of visit`, left(bp.visit_or_not, locate('-', bp.visit_or_not)-2) `Visit or not`,
@@ -170,6 +170,24 @@ where bp.visit_date >= '2023-08-24' and left(bp.visit_or_not, locate('-', bp.vis
 order by bp.visit_date ;
 
 update tabSME_BO_and_Plan set visit_or_not = 'No - ຍັງບໍ່ໄດ້ລົງຢ້ຽມຢາມ' where visit_date > date(now()) and visit_or_not = 'Yes - ຢ້ຽມຢາມແລ້ວ';
+
+
+-- ______________________________________________________________ check and update wrong amount ______________________________________________________________
+select * from tabSME_BO_and_Plan where usd_loan_amount >= 100000;
+
+select case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.dept else smec.dept end `DEPT`, 
+	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.sec_branch else smec.sec_branch end `SECT`, 
+	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit_no else smec.unit_no end `Unit_no`, 
+	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit else smec.unit end `Unit`, 
+	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then bp.staff_no else regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') end `Staff No`, 
+	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.staff_name else smec.staff_name end `Staff Name`, 
+	`type`, bp.usd_loan_amount, 
+	bp.normal_bullet , bp.contract_no , bp.case_no , bp.customer_name 
+from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
+left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
+where bp.usd_loan_amount >= 100000;
+
+
 
 -- add these collumn for for Kawakatsu method 2023-08-30
 alter table tabSME_BO_and_Plan add column `rank_S_date` date default null;
