@@ -135,25 +135,25 @@ where (bp.rank_update in ('S','A','B','C', 'F') or bp.list_type is not null )
 order by bp.name asc;
 
 
--- rank F yesterday
-select date_format(bp.creation, '%Y-%m-%d') `Date created`, concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`,
-	sme.dept `DEPT`, sme.sec_branch `SECT`, sme.unit_no `Unit_no`, sme.unit `Unit`,
-	bp.staff_no `Staff No`, sme.staff_name `Staff Name`, bp.double_count, bp.callcenter_of_sales , bp.`type` , bp.usd_amount , bp.normal_bullet, bp.customer_name, 
-	bp.rank1 , bp.rank_update, bp.ringi_status, bp.contract_status , bp.sp_cc `SP CC`, bp.rank_update_sp_cc `Rank of SP CC`, 
-	bp.modified `Date updated`, case when bp.modified < date(now()) then 'Pending' else UL
+-- ______________________________________________________________ rank SABCF yesterday need to follow today ______________________________________________________________
+select date_format(bp.creation, '%Y-%m-%d') `Date created`, date_format(bp.modified, '%Y-%m-%d') `Timestamp`, 
+	-- sme.dept `DEPT`, sme.sec_branch `SECT`, sme.unit_no `Unit_no`, sme.unit `Unit`, bp.staff_no `Staff No`, sme.staff_name `Staff Name`, 
+	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.dept else smec.dept end `DEPT`, 
+	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.sec_branch else smec.sec_branch end `SECT`, 
+	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit_no else smec.unit_no end `Unit_no`, 
+	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit else smec.unit end `Unit`, 
+	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then bp.staff_no else regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') end `Staff No`, 
+	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.staff_name else smec.staff_name end `Staff Name`, 
+	bp.rank1, case when bp.rank1 in ('S','A','B','C') then 'SABC' when bp.rank1 = 'F' then 'F' end `group_rank1`,
+	case when bp.contract_status = 'Contracted' then 'Contracted' when bp.contract_status = 'Cancelled' then 'Cancelled' else bp.rank_update end `Now Result`,
+	case when date_format(bp.modified, '%Y-%m-%d') != '2023-09-26' then null when bp.contract_status = 'Contracted' then 'Contracted' 
+		when bp.contract_status = 'Cancelled' then 'Cancelled' when bp.rank_update in ('S','A','B','C') then 'SABC' when bp.rank_update = 'F' then 'F'
+	end `Result today`,
+	concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`
 from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
-where date_format(bp.creation, '%Y-%m-%d') = '2023-08-21' and bp.rank1 = 'F' and bp.`type` in ('New', 'Dor','Inc')
-order by sme.unit_no , bp.staff_no, bp.creation ;
-
--- rank SABC yesterday
-select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`,
-	sme.dept `DEPT`, sme.sec_branch `SECT`, sme.unit_no `Unit_no`, sme.unit `Unit`,
-	bp.staff_no `Staff No`, sme.staff_name `Staff Name`, `point` , `type` , bp.usd_amount , bp.normal_bullet, bp.customer_name, 
-	bp.rank1 , bp.rank_update, bp.credit `Sales promotion CC`, bp.credit, bp.rank_of_credit ,
-	bp.ringi_status, bp.creation `Date created`
-from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
-where date_format(bp.creation, '%Y-%m-%d') = '2023-08-05' and bp.rank1 in ('S','A','B','C')
-order by sme.unit_no , bp.staff_no ;
+left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
+where date_format(bp.creation, '%Y-%m-%d') = '2023-09-25' and bp.rank1 in ('S','A','B','C','F') and bp.`type` in ('New', 'Dor','Inc')
+order by bp.name asc;
 
 -- ______________________________________________________________ Visit ______________________________________________________________
 -- visit result https://docs.google.com/spreadsheets/d/16W3U7r1WCSONrnFZdSXwb_1iNCbhCxCl2mmmWidhupI/edit#gid=266017824
