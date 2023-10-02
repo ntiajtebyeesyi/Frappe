@@ -236,7 +236,6 @@ alter table tabSME_BO_and_Plan rename column `province_and_city` to `real_estate
 
 
 -- export for 200-3-3-1 daily report
--- export for 200-3-3-1 daily report
 select date_format(bp.creation, '%Y-%m-%d') `input_date`, 
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then bp.staff_no else regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') end `Staff No`, 
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.staff_name else smec.staff_name end `Staff Name`, 
