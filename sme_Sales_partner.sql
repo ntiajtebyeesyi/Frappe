@@ -9,8 +9,42 @@ alter table tabsme_Sales_partner add column refer_id int(11) not null default 0;
 
 
 -- to make your form can add new record after you import data by cvs
-alter table tabsme_Sales_partner auto_increment=5678; -- next id
-insert into sme_sales_partner_id_seq select 5678, minimum_value, maximum_value, start_value, increment, cache_size, cycle_option, cycle_count from sme_sales_partner_id_seq;
+alter table tabsme_Sales_partner auto_increment=94768; -- next id
+insert into sme_sales_partner_id_seq select 94768, minimum_value, maximum_value, start_value, increment, cache_size, cycle_option, cycle_count from sme_sales_partner_id_seq;
+
+update tabsme_Sales_partner set modified = date(now()); -- creation = date(now()),
 
 
+-- export to google sheet
+select sme.`dept`, sme.`sec_branch`, sme.`unit_no`, sme.unit, sme.staff_no, sme.staff_name, sp.broker_type, sp.broker_name, sp.`rank`, sp.date_for_introduction, sp.customer_name,
+	sp.modified `date_update`, concat('http://13.250.153.252:8000/app/sme_sales_partner/', sp.name) `Edit`, sp.name `id`
+from tabsme_Sales_partner sp left join sme_org sme on (sp.current_staff = sme.staff_no)
+where sp.broker_type = 'SP -  ນາຍໜ້າໃນອາດີດ';
+
+
+-- temp update current_staff
+create table temp_sme_sales_partner (
+	id int(11) not null auto_increment,
+	current_staff varchar(255) 
+)
+
+
+
+-- update contact_no
+update tabsme_Sales_partner set broker_tel = 
+	case when broker_tel = '' then ''
+		when (length (regexp_replace(broker_tel , '[^[:digit:]]', '')) = 11 and left (regexp_replace(broker_tel , '[^[:digit:]]', ''),3) = '020')
+			or (length (regexp_replace(broker_tel , '[^[:digit:]]', '')) = 10 and left (regexp_replace(broker_tel , '[^[:digit:]]', ''),2) = '20')
+			or (length (regexp_replace(broker_tel , '[^[:digit:]]', '')) = 8 and left (regexp_replace(broker_tel , '[^[:digit:]]', ''),1) in ('2','5','7','8','9'))
+		then concat('9020',right(regexp_replace(broker_tel , '[^[:digit:]]', ''),8)) -- for 020
+		when (length (regexp_replace(broker_tel , '[^[:digit:]]', '')) = 10 and left (regexp_replace(broker_tel , '[^[:digit:]]', ''),3) = '030')
+			or (length (regexp_replace(broker_tel , '[^[:digit:]]', '')) = 9 and left (regexp_replace(broker_tel , '[^[:digit:]]', ''),2) = '30')
+			or (length (regexp_replace(broker_tel , '[^[:digit:]]', '')) = 7 and left (regexp_replace(broker_tel , '[^[:digit:]]', ''),1) in ('2','4','5','7','9'))
+		then concat('9030',right(regexp_replace(broker_tel , '[^[:digit:]]', ''),7)) -- for 030
+		when left (right (regexp_replace(broker_tel , '[^[:digit:]]', ''),8),1) in ('0','1','') then concat('9030',right(regexp_replace(broker_tel , '[^[:digit:]]', ''),7))
+		when left (right (regexp_replace(broker_tel , '[^[:digit:]]', ''),8),1) in ('2','5','7','8','9')
+		then concat('9020',right(regexp_replace(broker_tel , '[^[:digit:]]', ''),8))
+		else concat('9020',right(regexp_replace(broker_tel , '[^[:digit:]]', ''),8))
+	end
+;
 
