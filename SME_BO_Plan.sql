@@ -132,7 +132,6 @@ where (bp.rank_update in ('S','A','B','C', 'F') or bp.list_type is not null )
 	and case when bp.contract_status = 'Contracted' and bp.disbursement_date_pay_date < '2023-09-01' then 0 else 1 end != 0 -- if contracted before '2023-09-01' then not need
 	and case when bp.contract_status = 'Cancelled' and date_format(bp.modified, '%Y-%m-%d') < '2023-09-01' then 0 else 1 end != 0 -- if cencalled before '2023-09-01' then not need
 	and bp.`type` in ('New', 'Dor', 'Inc') -- new only 3 products
-	and case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.sec_branch_no else smec.sec_branch_no end = 1
 order by bp.name asc;
 
 
