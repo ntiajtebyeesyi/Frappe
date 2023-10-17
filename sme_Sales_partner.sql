@@ -25,8 +25,9 @@ where sp.broker_type = 'SP -  ນາຍໜ້າໃນອາດີດ';
 -- temp update current_staff
 create table temp_sme_sales_partner (
 	id int(11) not null auto_increment,
-	current_staff varchar(255) 
-)
+	current_staff varchar(255) ,
+	primary key (`id`)
+) engine=InnoDB auto_increment=1 default CHARSET=utf8mb4 collate utf8mb4_general_ci ;
 
 
 
