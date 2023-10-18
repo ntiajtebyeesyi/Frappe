@@ -124,7 +124,8 @@ select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_an
 		-- 3.2 Increase customer with low increase amount (less than 1,000$) and delay collection Rank CF need to upgrade collection rank to be SAB is order below here
 	end `visit_order`,
 	left(bp.address_province_and_city, locate('-', bp.address_province_and_city)-2) `province`, 
-	replace(bp.address_province_and_city, left(bp.address_province_and_city, locate('-', bp.address_province_and_city)+1), '')  `district`, bp.address_village
+	replace(bp.address_province_and_city, left(bp.address_province_and_city, locate('-', bp.address_province_and_city)+1), '')  `district`, bp.address_village,
+	is_sales_partner `SP_rank`
 	-- concat('=hyperlink(', concat('"http://13.250.153.252:8000/app/sme_bo_and_plan/', name) ,'","', bp.customer_name, '")') `For visit`
 from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
 left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
