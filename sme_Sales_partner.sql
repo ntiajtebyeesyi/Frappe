@@ -57,5 +57,9 @@ from tabsme_Sales_partner sp left join sme_org sme on (sp.current_staff = sme.st
 where sp.broker_type = 'SP -  ນາຍໜ້າໃນອາດີດ' order by sme.id ;
 
 
-
+-- 5way export to google sheet https://docs.google.com/spreadsheets/d/15wAmhxB0gDAHDwa6WSmY-PqPvAm6eOoIP5YKp48wTi4/edit#gid=406704453
+select sp.name `id`, date_format(sp.modified, '%Y-%m-%d') `date_update`, sme.`dept`, sme.`sec_branch`, sme.`unit_no`, sme.unit, sp.current_staff `staff_no` , sme.staff_name, sp.owner_staff 'owner', 
+	sp.broker_type, sp.broker_name, sp.address_province_and_city, sp.`rank`, sp.date_for_introduction, sp.customer_name, concat('http://13.250.153.252:8000/app/sme_sales_partner/', sp.name) `Edit`
+from tabsme_Sales_partner sp left join sme_org sme on (sp.current_staff = sme.staff_no)
+where sp.broker_type = '5way - 5ສາຍພົວພັນ' order by sme.id ;
 
