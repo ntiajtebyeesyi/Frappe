@@ -65,3 +65,14 @@ select sp.name `id`, date_format(sp.modified, '%Y-%m-%d') `date_update`, sme.`de
 from tabsme_Sales_partner sp left join sme_org sme on (sp.current_staff = sme.staff_no)
 where sp.broker_type = '5way - 5ສາຍພົວພັນ' and sp.owner_staff = sp.current_staff order by sme.id ;
 
+
+-- _____________________________________________________________ update current staff for tabsme_Sales_partner _____________________________________________________________
+-- export current data
+select name `id`, current_staff , refer_id 
+from tabsme_Sales_partner where broker_type = 'SP -  ນາຍໜ້າໃນອາດີດ';
+
+-- update 
+update tabsme_Sales_partner sp inner join temp_sme_sales_partner tsp on (sp.name = tsp.id)
+set sp.current_staff = tsp.current_staff ;
+
+
