@@ -41,7 +41,7 @@ select * from users u
 -- migration from lalcodb to frappe
 select TO_CHAR(inputdate :: DATE, 'yyyy-mm-dd') "creation", TO_CHAR(inputdate :: DATE, 'yyyy-mm-dd') "modified", 'Administrator' "modified_by", 'Administrator' "owner",
 	staffid "staff_no", case custtype when '1' then 'Dor' when '2' then 'Inc' when '3' then 'New' else '' end "type", visiteddate "visit_date", null "visit_or_not", loanamount "usd_loan_amount",
-	concat(firstname, ' ', lastname ) "customer_name", tel "customer_tel", rank1 "rank1", rank1 "rank_update", null "customer_card", null "ringi_status", null "ringi_comment", 
+	concat(firstname, ' ', lastname ) "customer_name", telno1 "customer_tel", rank1 "rank1", rank1 "rank_update", null "customer_card", null "ringi_status", null "ringi_comment", 
 	null "contract_status", null "contract_comment", fundwantdate "disbursement_date_pay_date", null "normal_bullet", maker "maker", model "model" , "year", 0 "usd_value",
 	null "address_province_and_city", addr "address_village", concat(staffid,' - ', staffname) "callcenter_of_sales"
 from custtbl c left join sme_org sme on (c.staffid = sme.staff_no)
