@@ -32,8 +32,6 @@ create table sme_org (
 );
 
 
-
-
 select * from custtbl where inputdate = date(now())
 
 select * from users u 
