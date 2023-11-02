@@ -266,3 +266,12 @@ where (bp.rank_update in ('S','A','B','C') or bp.list_type is not null )
 order by bp.name asc;
 
 
+-- ______________________________________________ update tabNow (All - Contracted - Cancelled) ______________________________________________
+select * from tabSME_BO_and_Plan bp inner join temp_sme_SABC tss on (bp.name = tss.id)
+
+update tabSME_BO_and_Plan bp inner join temp_sme_SABC tss on (bp.name = tss.id)
+set bp.staff_no = tss.current_staff ;
+
+
+
+
