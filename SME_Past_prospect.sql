@@ -73,7 +73,7 @@ select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_an
 	-- concat('=hyperlink(', concat('"http://13.250.153.252:8000/app/sme_bo_and_plan/', name) ,'","', bp.customer_name, '")') `For visit`
 from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
 left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
-where (bp.rank_update in ('F') or bp.list_type is not null )
+where bp.rank_update in ('F')
 	and bp.contract_status not in ('Contracted', 'Cancelled')  -- if contracted before '2023-10-01' then not need
 	and bp.`type` in ('New', 'Dor', 'Inc') -- new only 3 products
 	and bp.name not in (select id from temp_sme_SABC) -- if it's in SABC target not need
