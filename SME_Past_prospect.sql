@@ -159,5 +159,5 @@ select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_an
 from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
 left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
 where bp.name in (select id from temp_sme_SABCF where `type` in ('F') )
-order by case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit_no else smec.unit_no end asc;
+order by case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.id else smec.id end asc;
 
