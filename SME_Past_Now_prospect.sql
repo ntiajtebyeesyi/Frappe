@@ -87,12 +87,14 @@ select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_an
 	-- concat('=hyperlink(', concat('"http://13.250.153.252:8000/app/sme_bo_and_plan/', name) ,'","', bp.customer_name, '")') `For visit`
 from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
 left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
-where bp.rank_update in ('S','A','B','C')
-	and bp.contract_status not in ('Contracted', 'Cancelled')  -- if contracted before '2023-10-01' then not need
+where (bp.rank_update in ('S','A','B','C') or bp.rank1 in ('S','A','B','C') ) -- if F rank and modifiled over 3months not need
+	and case when bp.contract_status = 'Contracted' and bp.disbursement_date_pay_date < '2023-10-01' then 0 else 1 end != 0 -- if contracted before '2023-10-01' then not need
+	and case when bp.contract_status = 'Cancelled' and date_format(bp.modified, '%Y-%m-%d') < '2023-10-01' then 0 else 1 end != 0 -- if cencalled before '2023-10-01' then not need
 	and bp.`type` in ('New', 'Dor', 'Inc') -- new only 3 products
-	and bp.name not in (select id from temp_sme_SABCF) -- if it's in SABC target not need
 	and case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit_no else smec.unit_no end is not null -- if resigned staff no need
-order by sme.id asc;
+	and bp.name not in (select id from temp_sme_SABCF) -- if it's in SABC target not need
+order by bp.name asc;
+
 
 
 
