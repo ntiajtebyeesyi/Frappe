@@ -96,7 +96,7 @@ order by sme.id asc;
 
 
 
--- SME_past_SABC
+-- SME_past_SABC https://docs.google.com/spreadsheets/d/1ufgINqUYboNJtQLqMFbywADzm_mLQTllh4QtlZODPi0/edit#gid=700696176
 select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`,
 	-- sme.dept `DEPT`, sme.sec_branch `SECT`, sme.unit_no `Unit_no`, sme.unit `Unit`, bp.staff_no `Staff No`, sme.staff_name `Staff Name`, 
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.dept else smec.dept end `DEPT`, 
