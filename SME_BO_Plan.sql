@@ -129,7 +129,7 @@ select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_an
 	-- concat('=hyperlink(', concat('"http://13.250.153.252:8000/app/sme_bo_and_plan/', name) ,'","', bp.customer_name, '")') `For visit`
 from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
 left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
-where (bp.rank_update in ('S','A','B','C') or (bp.rank_update = 'F' and bp.modified >= '2023-07-01') or bp.list_type is not null ) -- if F rank and modifiled over 3months not need
+where (bp.rank_update in ('S','A','B','C') or bp.rank1 in ('S','A','B','C') or (bp.rank_update = 'F' and bp.modified >= '2023-07-01') or bp.list_type is not null ) -- if F rank and modifiled over 3months not need
 	and case when bp.contract_status = 'Contracted' and bp.disbursement_date_pay_date < '2023-10-01' then 0 else 1 end != 0 -- if contracted before '2023-10-01' then not need
 	and case when bp.contract_status = 'Cancelled' and date_format(bp.modified, '%Y-%m-%d') < '2023-10-01' then 0 else 1 end != 0 -- if cencalled before '2023-10-01' then not need
 	and bp.`type` in ('New', 'Dor', 'Inc') -- new only 3 products
