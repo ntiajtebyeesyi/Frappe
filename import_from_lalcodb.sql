@@ -69,6 +69,18 @@ insert into sme_bo_and_plan_id_seq select 187309, minimum_value, maximum_value, 
 
 -- _________________________________________________________ END _________________________________________________________
 
+-- _________________________________________________________ task on 2023-11-08 _________________________________________________________
+-- export to check and remove duplicate
+select name 'id', staff_no 'current_staff', custtbl_id, customer_name, customer_tel, rank1 , creation , modified 
+from tabSME_BO_and_Plan 
+where custtbl_id is not null
+
+
+-- backup and store in D:\OneDrive - LALCO lalcodb1\OneDrive - Lao Asean Leasing Co. Ltd\frappe\tabSME_BO_and_Plan_F_rank_from_lalcodb_20221001_to_20230731.sql
+select * -- name 'id', staff_no 'current_staff', custtbl_id, customer_name, customer_tel, rank1 , creation , modified 
+from tabSME_BO_and_Plan 
+where custtbl_id is not null and rank1 = 'F'
+
 
 
 
