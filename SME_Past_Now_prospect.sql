@@ -92,7 +92,7 @@ where (bp.rank_update in ('S','A','B','C') or bp.rank1 in ('S','A','B','C') ) --
 	and case when bp.contract_status = 'Cancelled' and date_format(bp.modified, '%Y-%m-%d') < '2023-10-01' then 0 else 1 end != 0 -- if cencalled before '2023-10-01' then not need
 	and bp.`type` in ('New', 'Dor', 'Inc') -- new only 3 products
 	and case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit_no else smec.unit_no end is not null -- if resigned staff no need
-	and bp.name not in (select id from temp_sme_SABCF) -- if it's in SABC target not need
+	and bp.name not in (select id from temp_sme_SABCF) -- if it's in SABCF target not need
 order by bp.name asc;
 
 
@@ -252,7 +252,7 @@ left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]
 where bp.rank_update in ('F')
 	and bp.contract_status not in ('Contracted', 'Cancelled')  -- if contracted before '2023-10-01' then not need
 	and bp.`type` in ('New', 'Dor', 'Inc') -- new only 3 products
-	and bp.name not in (select id from temp_sme_SABCF) -- if it's in SABC target not need
+	and bp.name not in (select id from temp_sme_SABCF) -- if it's in SABCF target not need
 	and case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit_no else smec.unit_no end is not null -- if resigned staff no need
 order by sme.id asc;
 
