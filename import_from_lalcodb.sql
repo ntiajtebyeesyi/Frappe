@@ -64,8 +64,8 @@ where rank1 in ('S','A','B','C') and c.telno1 not in ('90305750744','90207997074
 ) and c.inputdate < '2023-08-01'; 
 
 -- to make your form can add new record after you import data from lalcodb
-alter table tabSME_BO_and_Plan auto_increment=117796; -- next id
-insert into sme_bo_and_plan_id_seq select 117796, minimum_value, maximum_value, start_value, increment, cache_size, cycle_option, cycle_count from sme_bo_and_plan_id_seq;
+alter table tabSME_BO_and_Plan auto_increment=187309; -- next id
+insert into sme_bo_and_plan_id_seq select 187309, minimum_value, maximum_value, start_value, increment, cache_size, cycle_option, cycle_count from sme_bo_and_plan_id_seq;
 
 -- _________________________________________________________ END _________________________________________________________
 
