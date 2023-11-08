@@ -7,6 +7,13 @@ create table `temp_sme_SABCF` (
 ) engine=innodb auto_increment=116054 default charset=utf8mb4 collate=utf8mb4_general_ci;
 
 
+create table `temp_sme_SABCF_remove_duplicate` (
+  `id` int(11) not null auto_increment,
+  `current_staff` varchar(255) default null,
+  `type` varchar(255) default null,
+  primary key (`id`)
+) engine=innodb auto_increment=1 default charset=utf8mb4 collate=utf8mb4_general_ci;
+
 
 
 -- Past prospect SABC
