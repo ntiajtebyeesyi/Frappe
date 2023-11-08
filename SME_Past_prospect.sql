@@ -1,5 +1,5 @@
 
-create table `temp_sme_sabc` (
+create table `temp_sme_SABCF` (
   `id` int(11) not null auto_increment,
   `current_staff` varchar(255) default null,
   `type` varchar(255) default null,
