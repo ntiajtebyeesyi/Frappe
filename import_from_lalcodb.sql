@@ -69,6 +69,7 @@ insert into sme_bo_and_plan_id_seq select 187309, minimum_value, maximum_value, 
 
 -- _________________________________________________________ END _________________________________________________________
 
+
 -- _________________________________________________________ task on 2023-11-08 _________________________________________________________
 -- export to check and remove duplicate
 select name 'id', staff_no 'current_staff', custtbl_id, customer_name, customer_tel, rank1 , creation , modified 
@@ -81,7 +82,16 @@ select * -- name 'id', staff_no 'current_staff', custtbl_id, customer_name, cust
 from tabSME_BO_and_Plan 
 where custtbl_id is not null and rank1 = 'F'
 
+create table `temp_sme_SABCF_remove_duplicate` (
+  `id` int(11) not null auto_increment,
+  `current_staff` varchar(255) default null,
+  `type` varchar(255) default null,
+  primary key (`id`)
+) engine=innodb auto_increment=1 default charset=utf8mb4 collate=utf8mb4_general_ci;
 
+select * from tabSME_BO_and_Plan where name in (select id from temp_sme_SABCF_remove_duplicate);
+
+delete from tabSME_BO_and_Plan where name in (select id from temp_sme_SABCF_remove_duplicate);
 
 
 
