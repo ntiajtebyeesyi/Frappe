@@ -217,7 +217,7 @@ where (bp.rank_update in ('S','A','B','C') or bp.rank1 in ('S','A','B','C') or b
 	and bp.contract_status != 'Cancelled' -- if cencalled then not need
 	and bp.`type` in ('New', 'Dor', 'Inc') -- new only 3 products
 	and case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit_no else smec.unit_no end is not null -- if resigned staff no need
-order by case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit_no else smec.unit_no end asc;
+order by case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.id else smec.id end asc;
 
 
 
