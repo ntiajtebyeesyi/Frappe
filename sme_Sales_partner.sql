@@ -78,3 +78,22 @@ update tabsme_Sales_partner sp inner join temp_sme_sales_partner tsp on (sp.name
 set sp.current_staff = tsp.current_staff ;
 
 
+-- _____________________________________________________________ update Sales partner _____________________________________________________________
+-- SP
+update tabsme_Sales_partner set broker_type = 'SP - ນາຍໜ້າໃນອາດີດ', refer_type = 'LMS_Broker' where name between 1 and 5677;
+
+-- 5way
+update tabsme_Sales_partner set broker_type = '5way - 5ສາຍພົວພັນ', refer_type = '5way' where name between 5678 and 94767;
+
+
+
+
+
+
+
+
+
+
+
+
+
