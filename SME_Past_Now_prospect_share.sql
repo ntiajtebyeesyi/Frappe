@@ -98,14 +98,14 @@ order by case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = ''
 
 
 
--- SME_past_SABC https://docs.google.com/spreadsheets/d/1ufgINqUYboNJtQLqMFbywADzm_mLQTllh4QtlZODPi0/edit#gid=700696176
+-- SME_past_SABC https://docs.google.com/spreadsheets/d/1ufgINqUYboNJtQLqMFbywADzm_mLQTllh4QtlZODPi0/edit#gid=894479426
 select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`,
 	-- sme.dept `DEPT`, sme.sec_branch `SECT`, sme.unit_no `Unit_no`, sme.unit `Unit`, bp.staff_no `Staff No`, sme.staff_name `Staff Name`, 
 	sme.dept `DEPT`, 
 	sme.sec_branch `SECT`, 
 	sme.unit_no `Unit_no`, 
 	sme.unit `Unit`, 
-	bp.staff_no `Staff No`, 
+	sme.staff_no `Staff No`, 
 	sme.staff_name `Staff Name`, 
 	1 `point`, `type`, bp.usd_loan_amount, 
 	bp.normal_bullet , bp.contract_no , bp.case_no , bp.customer_name , bp.customer_tel ,
@@ -167,13 +167,13 @@ select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_an
 	left(bp.address_province_and_city, locate('-', bp.address_province_and_city)-2) `province`, 
 	replace(bp.address_province_and_city, left(bp.address_province_and_city, locate('-', bp.address_province_and_city)+1), '')  `district`, bp.address_village,
 	is_sales_partner `SP_rank`,
-	bp.disbursement_date_pay_date , 'ແຜນເພີ່ມ' `which`, bp.name, bp.credit, 
-	case when locate(' ', bp.rank_of_credit) = 0 then bp.rank_of_credit else left(bp.rank_of_credit, locate(' ', bp.rank_of_credit)-1) end `rank_of_credit`,
+	bp.disbursement_date_pay_date , 'ແຜນເພີ່ມ' `which`, bp.name, bp.credit, bp.rank_of_credit,
+	-- case when locate(' ', bp.rank_of_credit) = 0 then bp.rank_of_credit else left(bp.rank_of_credit, locate(' ', bp.rank_of_credit)-1) end `rank_of_credit`,
 	case when bp.credit_remark is not null then bp.credit_remark else bp.contract_comment end `comments`
 	-- concat('=hyperlink(', concat('"http://13.250.153.252:8000/app/sme_bo_and_plan/', name) ,'","', bp.customer_name, '")') `For visit`
-from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
+from tabSME_BO_and_Plan bp left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
 -- left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
-where bp.name in (select id from temp_sme_SABCF where `type` in ('SABC', 'S', 'A', 'B', 'C') and month_type <= 36)
+where bp.name in (select id from temp_sme_pbx_BO where `type` in ('SABC', 'S', 'A', 'B', 'C') and month_type <= 36)
 order by sme.id asc;
 
 
