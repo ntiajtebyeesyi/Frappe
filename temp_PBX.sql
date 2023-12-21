@@ -19,6 +19,11 @@ create table `temp_sme_pbx_SP` (
 	primary key (`id`)
 )engine=InnoDB auto_increment=1 default CHARSET=utf8mb3 collate=utf8mb3_general_ci;
 
+-- 2.1 update current sales
+update temp_sme_pbx_SP ts inner join tabsme_Sales_partner sp on (ts.id = sp.name)
+set ts.current_staff = sp.current_staff ;
 
-
-
+-- 2.2 insert new record to temp_sme_pbx_SP
+insert into temp_sme_pbx_SP 
+select sp.name `id`, sp.broker_tel, null `pbx_status`, null `date`, sp.current_staff from tabsme_Sales_partner sp inner join sme_org sme on (sp.current_staff = sme.staff_no)
+where name not in (select id from temp_sme_pbx_SP);
