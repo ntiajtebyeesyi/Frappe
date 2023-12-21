@@ -30,16 +30,16 @@ alter table tabSME_BO_and_Plan auto_increment=11549;
 alter table tabSME_BO_and_Plan drop column priority_for_visit;
 
 
--- tabSME_BO_and_Plan -> test SME_BO_and_Plan https://docs.google.com/spreadsheets/d/1dqrXSSNq6ACAKzOuep62Qxl8ebKF9SUI3Z5v6e6f9sE/edit#gid=1867067672
+-- tabSME_BO_and_Plan https://docs.google.com/spreadsheets/d/1dqrXSSNq6ACAKzOuep62Qxl8ebKF9SUI3Z5v6e6f9sE/edit#gid=327208497
 select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`,
 	-- sme.dept `DEPT`, sme.sec_branch `SECT`, sme.unit_no `Unit_no`, sme.unit `Unit`, bp.staff_no `Staff No`, sme.staff_name `Staff Name`, 
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.dept else smec.dept end `DEPT`, 
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.sec_branch else smec.sec_branch end `SECT`, 
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit_no else smec.unit_no end `Unit_no`, 
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit else smec.unit end `Unit`, 
-	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then bp.staff_no else regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') end `Staff No`, 
+	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.staff_no else smec.staff_no end`Staff No`, 
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.staff_name else smec.staff_name end `Staff Name`, 
-	1 `point`, `type`, bp.usd_loan_amount, 
+	1 `point`, bp.`type`, bp.usd_loan_amount, 
 	bp.normal_bullet , bp.contract_no , bp.case_no , bp.customer_name , bp.customer_tel ,
 	bp.ringi_status , bp.ringi_comment , bp.disbursement_date_pay_date , bp.contract_status , bp.contract_comment , bp.customer_card , bp.rank1 , bp.approch_list , bp.rank_update , 
 	bp.visit_date , bp.visit_or_not ,
@@ -100,7 +100,7 @@ select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_an
 	replace(bp.address_province_and_city, left(bp.address_province_and_city, locate('-', bp.address_province_and_city)+1), '')  `district`, bp.address_village,
 	is_sales_partner `SP_rank`
 	-- concat('=hyperlink(', concat('"http://13.250.153.252:8000/app/sme_bo_and_plan/', name) ,'","', bp.customer_name, '")') `For visit`
-from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
+from tabSME_BO_and_Plan bp left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
 left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
 where (bp.rank_update in ('S','A','B','C') or bp.rank1 in ('S','A','B','C') or (bp.rank_update = 'F' and bp.modified >= '2023-07-01') or bp.list_type is not null ) -- if F rank and modifiled over 3months not need
 	and case when bp.contract_status = 'Contracted' and bp.disbursement_date_pay_date < '2023-10-01' then 0 else 1 end != 0 -- if contracted before '2023-10-01' then not need
@@ -113,16 +113,16 @@ order by bp.name asc;
 
 
 
--- SME_BO_Now_SABC for credit check and set the date https://docs.google.com/spreadsheets/d/1dqrXSSNq6ACAKzOuep62Qxl8ebKF9SUI3Z5v6e6f9sE/edit#gid=1045110564
+-- SME_BO_Now_SABC https://docs.google.com/spreadsheets/d/1dqrXSSNq6ACAKzOuep62Qxl8ebKF9SUI3Z5v6e6f9sE/edit#gid=1474510561
 select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`,
 	-- sme.dept `DEPT`, sme.sec_branch `SECT`, sme.unit_no `Unit_no`, sme.unit `Unit`, bp.staff_no `Staff No`, sme.staff_name `Staff Name`, 
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.dept else smec.dept end `DEPT`, 
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.sec_branch else smec.sec_branch end `SECT`, 
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit_no else smec.unit_no end `Unit_no`, 
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit else smec.unit end `Unit`, 
-	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then bp.staff_no else regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') end `Staff No`, 
+	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.staff_no else smec.staff_no end`Staff No`, 
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.staff_name else smec.staff_name end `Staff Name`, 
-	1 `point`, `type`, bp.usd_loan_amount, 
+	1 `point`, bp.`type`, bp.usd_loan_amount, 
 	bp.normal_bullet , bp.contract_no , bp.case_no , bp.customer_name , bp.customer_tel ,
 	bp.ringi_status , bp.ringi_comment , bp.disbursement_date_pay_date , bp.contract_status , bp.contract_comment , bp.customer_card , bp.rank1 , bp.approch_list , bp.rank_update , 
 	bp.visit_date , bp.visit_or_not ,
@@ -183,7 +183,7 @@ select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_an
 	replace(bp.address_province_and_city, left(bp.address_province_and_city, locate('-', bp.address_province_and_city)+1), '')  `district`, bp.address_village,
 	is_sales_partner `SP_rank`
 	-- concat('=hyperlink(', concat('"http://13.250.153.252:8000/app/sme_bo_and_plan/', name) ,'","', bp.customer_name, '")') `For visit`
-from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
+from tabSME_BO_and_Plan bp left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
 left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
 where (bp.rank_update in ('S','A','B','C') or bp.rank1 in ('S','A','B','C') or bp.list_type is not null ) -- if F rank and modifiled over 3months not need
 	and bp.contract_status != 'Contracted' -- if contracted then not need
