@@ -24,7 +24,7 @@ select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_an
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit else smec.unit end `Unit`, 
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then bp.staff_no else regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') end `Staff No`, 
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.staff_name else smec.staff_name end `Staff Name`, 
-	1 `point`, `type`, bp.usd_loan_amount, 
+	1 `point`, bp.`type`, bp.usd_loan_amount, 
 	bp.normal_bullet , bp.contract_no , bp.case_no , bp.customer_name , bp.customer_tel ,
 	bp.ringi_status , bp.ringi_comment , bp.disbursement_date_pay_date , bp.contract_status , bp.contract_comment , bp.customer_card , bp.rank1 , bp.approch_list , bp.rank_update , 
 	bp.visit_date , bp.visit_or_not ,
@@ -107,7 +107,7 @@ select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_an
 	sme.unit `Unit`, 
 	sme.staff_no `Staff No`, 
 	sme.staff_name `Staff Name`, 
-	1 `point`, `type`, bp.usd_loan_amount, 
+	1 `point`, bp.`type`, bp.usd_loan_amount, 
 	bp.normal_bullet , bp.contract_no , bp.case_no , bp.customer_name , bp.customer_tel ,
 	bp.ringi_status , bp.ringi_comment , bp.disbursement_date_pay_date , bp.contract_status , bp.contract_comment , bp.customer_card , bp.rank1 , bp.approch_list , bp.rank_update , 
 	bp.visit_date , bp.visit_or_not ,
@@ -169,10 +169,12 @@ select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_an
 	is_sales_partner `SP_rank`,
 	bp.disbursement_date_pay_date , 'ແຜນເພີ່ມ' `which`, bp.name, bp.credit, bp.rank_of_credit,
 	-- case when locate(' ', bp.rank_of_credit) = 0 then bp.rank_of_credit else left(bp.rank_of_credit, locate(' ', bp.rank_of_credit)-1) end `rank_of_credit`,
-	case when bp.credit_remark is not null then bp.credit_remark else bp.contract_comment end `comments`
+	case when bp.credit_remark is not null then bp.credit_remark else bp.contract_comment end `comments`,
+	tb.pbx_status `LCC check`
 	-- concat('=hyperlink(', concat('"http://13.250.153.252:8000/app/sme_bo_and_plan/', name) ,'","', bp.customer_name, '")') `For visit`
 from tabSME_BO_and_Plan bp left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
 -- left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
+inner join temp_sme_pbx_BO tb on (tb.id = bp.name)
 where bp.name in (select id from temp_sme_pbx_BO where `type` in ('SABC', 'S', 'A', 'B', 'C') and month_type <= 36)
 order by sme.id asc;
 
