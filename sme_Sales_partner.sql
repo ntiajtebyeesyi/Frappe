@@ -71,6 +71,13 @@ from tabsme_Sales_partner sp left join sme_org sme on (sp.current_staff = sme.st
 where sp.broker_type = '5way - 5ສາຍພົວພັນ' and sp.owner_staff = sp.current_staff order by sme.id ;
 
 
+-- export to check pbx
+select sp.name `id`, sp.broker_tel, null `pbx_status`, null `date`, sp.current_staff
+from tabsme_Sales_partner sp inner join sme_org sme on (sp.current_staff = sme.staff_no)
+where sp.broker_type = '5way - 5ສາຍພົວພັນ' and sp.owner_staff = sp.current_staff 
+	and sp.name not in (select refer_id from tabsme_Sales_partner where refer_type = '5way - 5ສາຍພົວພັນ')
+order by sme.id ;
+
 -- _____________________________________________________________ update current staff for tabsme_Sales_partner _____________________________________________________________
 -- export current data
 select name `id`, current_staff , refer_id 
