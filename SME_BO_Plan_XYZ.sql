@@ -11,7 +11,7 @@ select bp.modified `Timestamp`,
 	concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`
 from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
 left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
-where bp.is_sales_partner in ('X-ລູກຄ້າປັດຈຸບັນສົນໃຈເປັນນາຍໜ້າ', 'Y-ລູກຄ້າເກົ່າສົນໃຈເປັນນາຍໜ້າ', 'Z-ລູກຄ້າໃໝ່ສົນໃຈເປັນນາຍໜ້າ')
+where bp.is_sales_partner in ('X - ລູກຄ້າປັດຈຸບັນ ທີ່ສົນໃຈເປັນນາຍໜ້າ', 'Y - ລູກຄ້າເກົ່າ ທີ່ສົນໃຈເປັນນາຍໜ້າ', 'Z - ລູກຄ້າໃໝ່ ທີ່ສົນໃຈເປັນນາຍໜ້າ')
 order by sme.id asc;
 
 
@@ -57,5 +57,21 @@ select sp.name `id`, date_format(sp.modified, '%Y-%m-%d') `date_update`, sme.`de
 	sp.broker_tel, sp.currency, sp.amount
 from tabsme_Sales_partner sp left join sme_org sme on (sp.current_staff = sme.staff_no)
 where sp.refer_type = 'tabSME_BO_and_Plan' order by sme.id ;
+
+
+-- export to check pbx
+select sp.name `id`, sp.broker_tel, null `pbx_status`, null `date`, sp.current_staff
+from tabsme_Sales_partner sp left join sme_org sme on (sp.current_staff = sme.staff_no)
+-- where sp.broker_type = 'SP - ນາຍໜ້າໃນອາດີດ' order by sme.id ;
+where sp.refer_type = 'tabSME_BO_and_Plan' order by sme.id ;
+
+
+
+
+
+
+
+
+
 
 
