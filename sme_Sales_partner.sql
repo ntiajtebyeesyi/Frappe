@@ -81,7 +81,7 @@ order by sme.id ;
 -- _____________________________________________________________ update current staff for tabsme_Sales_partner _____________________________________________________________
 -- export current data
 select name `id`, current_staff , refer_id 
-from tabsme_Sales_partner where broker_type = 'SP -  ນາຍໜ້າໃນອາດີດ';
+from tabsme_Sales_partner where broker_type = 'SP - ນາຍໜ້າໃນອາດີດ';
 
 -- update 
 update tabsme_Sales_partner sp inner join temp_sme_sales_partner tsp on (sp.name = tsp.id)
