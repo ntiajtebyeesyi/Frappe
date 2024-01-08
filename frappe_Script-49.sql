@@ -227,8 +227,7 @@ set bp.staff_no = tss.current_staff, bp.callcenter_of_sales = null
 where tss.`type` = 'F'
 
 
-select * from tabSME_BO_and_Plan tsbap where name in (178866,179107,179347,179581,179828,180095,180343,180589,180832,181080,181327,181622,181881,182117,182358,182598,182855,183101
-)
+
 
 
 -- SABC result
@@ -253,7 +252,7 @@ select bp.modified `Timestamp`,
 from tabSME_BO_and_Plan bp left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
 left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
 inner join temp_sme_pbx_BO tb on (tb.id = bp.name)
-where bp.name in (select id from temp_sme_pbx_BO where `type` in ('SABC', 'S', 'A', 'B', 'C') )
+where bp.name in (select id from temp_sme_pbx_BO where `type` in ('SABC', 'S', 'A', 'B', 'C') ) 
 order by sme.id asc;
 
 
@@ -261,15 +260,6 @@ insert into tabSME_BO_and_Plan; select * from tabSME_BO_and_Plan_bk where name n
 
 select * from tabsme_Sales_partner_bk where name not in (select name from tabsme_Sales_partner);
 
--- check and add to the list temp_sme_pbx_BO
-select bp.name `id`, bp.customer_tel `tel`, null `pbx_status`, null `date`, sme.staff_no `current_staff`, 
-	case when bp.contract_status = 'Contracted' then 'Contracted' when bp.contract_status = 'Cancelled' then 'Cancelled' else bp.rank_update end `type`,
-	timestampdiff(month,date_format(bp.creation, '%Y-%m-%d'), date(now())) `month_type`
-from tabSME_BO_and_Plan bp left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
-left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
-where date_format(bp.creation, '%Y-%m-%d') >= '2023-11-01' and bp.rank_update in ('S', 'A', 'B', 'C') 
-	and bp.contract_status not in ('Contracted', 'Cancelled')
-order by bp.name asc;
 
 
 
