@@ -84,8 +84,8 @@ select name `id`, current_staff , refer_id
 from tabsme_Sales_partner where broker_type = 'SP - ນາຍໜ້າໃນອາດີດ';
 
 -- update 
-update tabsme_Sales_partner sp inner join temp_sme_sales_partner tsp on (sp.name = tsp.id)
-set sp.current_staff = tsp.current_staff ;
+update tabsme_Sales_partner sp inner join temp_sme_pbx_SP tsp on (sp.name = tsp.id)
+set sp.current_staff = tsp.current_staff where  sp.broker_type = 'SP - ນາຍໜ້າໃນອາດີດ';
 
 
 -- _____________________________________________________________ update Sales partner _____________________________________________________________
