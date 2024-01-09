@@ -348,7 +348,7 @@ order by bp.name asc;
 -- ______________________________________________ update tabNow (All - Contracted - Cancelled) ______________________________________________
 select name, staff_no, double_count , callcenter_of_sales from tabSME_BO_and_Plan bp inner join temp_sme_SABCF tss on (bp.name = tss.id) where tss.`type` = 'F';
 
-update tabSME_BO_and_Plan bp inner join temp_sme_SABCF tss on (bp.name = tss.id)
+update tabSME_BO_and_Plan bp inner join temp_sme_pbx_BO tss on (bp.name = tss.id)
 set bp.staff_no = tss.current_staff ;
 
 update tabSME_BO_and_Plan bp inner join temp_sme_SABCF tss on (bp.name = tss.id)
