@@ -54,9 +54,9 @@ update tabsme_Sales_partner set broker_tel =
 select sp.name `id`, date_format(sp.modified, '%Y-%m-%d') `date_update`, sme.`dept`, sme.`sec_branch`, sme.`unit_no`, sme.unit, sp.current_staff `staff_no` , sme.staff_name, sp.owner_staff 'owner', 
 	sp.broker_type, sp.broker_name, sp.address_province_and_city, sp.`rank`, sp.date_for_introduction, sp.customer_name, concat('http://13.250.153.252:8000/app/sme_sales_partner/', sp.name) `Edit`,
 	case when sp.owner_staff = sp.current_staff then '1' else 0 end `owner_takeover`,
-	sp.broker_tel,
-	sp.credit, sp.rank_of_credit, sp.credit_remark,
-	ts.pbx_status `LCC check`
+	sp.broker_tel, sp.credit, sp.rank_of_credit, sp.credit_remark, ts.pbx_status `LCC check`, 
+	case when sp.modified < date(now()) then '-' else left(sp.`rank`, locate(' ',sp.`rank`)-1) end `rank of call today`,
+	sp.business_type
 from tabsme_Sales_partner sp left join sme_org sme on (sp.current_staff = sme.staff_no)
 inner join temp_sme_pbx_SP ts on (ts.id = sp.name)
 where sp.refer_type = 'LMS_Broker' order by sme.id ;
