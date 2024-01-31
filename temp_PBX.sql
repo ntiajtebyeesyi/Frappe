@@ -32,7 +32,10 @@ select sp.name `id`, sp.broker_tel, null `pbx_status`, null `date`, sp.current_s
 where name not in (select id from temp_sme_pbx_SP);
 
 
--- Additional list for SABC less or 1 year
+-- SABC export the current list 
+select * from temp_sme_pbx_BO tspb;
+
+-- SABC Additional list for SABC less or 1 year
 select bp.name `id`, bp.customer_tel, null `pbx_status`, null `date`, staff_no `current_staff`, 
 	case when bp.rank_update in ('S', 'A', 'B', 'C') then bp.rank_update else bp.rank1 end `type`, 
 	case when timestampdiff(month, bp.creation, date(now())) > 36 then 36 else timestampdiff(month, bp.creation, date(now())) end `month_type`,
