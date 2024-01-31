@@ -2,12 +2,15 @@
 
 -- 1) create temp_sme_pbx_BO for import the data call on pbx to check did they call by IP Phone or not
 create table `temp_sme_pbx_BO` (
-	`id` int(11) not null auto_increment,
-	`customer_tel` varchar(255) default null,
-	`pbx_status` varchar(255) default null,
-	`date` datetime default null,
-	primary key (`id`)
-)engine=InnoDB auto_increment=1 default CHARSET=utf8mb3 collate=utf8mb3_general_ci;
+  `id` int(11) not null auto_increment,
+  `customer_tel` varchar(255) default null,
+  `pbx_status` varchar(255) default null,
+  `date` datetime default null,
+  `current_staff` varchar(255) default null,
+  `type` varchar(255) default null,
+  `month_type` int(11) default null comment '3=3 months or less, 6=6months or less, 9=9months or less, 12=12months or less',
+  primary key (`id`)
+) engine=innodb auto_increment=1 default charset=utf8mb3 collate=utf8mb3_general_ci;
 
 
 -- 2) create temp_sme_pbx_SP for import the data call on pbx to check did they call by IP Phone or not
