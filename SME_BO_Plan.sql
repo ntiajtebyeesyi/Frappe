@@ -102,9 +102,9 @@ select bp.modified `Timestamp`, concat('http://13.250.153.252:8000/app/sme_bo_an
 	-- concat('=hyperlink(', concat('"http://13.250.153.252:8000/app/sme_bo_and_plan/', name) ,'","', bp.customer_name, '")') `For visit`
 from tabSME_BO_and_Plan bp left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
 left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
-where (bp.rank_update in ('S','A','B','C') or bp.rank1 in ('S','A','B','C') or (bp.rank_update = 'F' and bp.modified >= '2023-07-01') or bp.list_type is not null ) -- if F rank and modifiled over 3months not need
-	and case when bp.contract_status = 'Contracted' and bp.disbursement_date_pay_date < '2023-10-01' then 0 else 1 end != 0 -- if contracted before '2023-10-01' then not need
-	and case when bp.contract_status = 'Cancelled' and date_format(bp.modified, '%Y-%m-%d') < '2023-10-01' then 0 else 1 end != 0 -- if cencalled before '2023-10-01' then not need
+where (bp.rank_update in ('S','A','B','C') or bp.rank1 in ('S','A','B','C') or (bp.rank_update = 'F' and bp.modified >= '2023-12-01') or bp.list_type is not null ) -- if F rank and modifiled over 3months not need
+	and case when bp.contract_status = 'Contracted' and bp.disbursement_date_pay_date < '2024-02-01' then 0 else 1 end != 0 -- if contracted before this month then not need
+	and case when bp.contract_status = 'Cancelled' and date_format(bp.modified, '%Y-%m-%d') < '2024-02-01' then 0 else 1 end != 0 -- if cencalled before this month then not need
 	and bp.`type` in ('New', 'Dor', 'Inc') -- new only 3 products
 	and case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit_no else smec.unit_no end is not null -- if resigned staff no need
 order by bp.name asc;
