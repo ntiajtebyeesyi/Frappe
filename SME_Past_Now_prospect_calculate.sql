@@ -1,4 +1,15 @@
 
+CREATE TABLE `temp_sme_pbx_BO_1` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `customer_tel` varchar(255) DEFAULT NULL,
+  `pbx_status` varchar(255) DEFAULT NULL,
+  `date` datetime DEFAULT NULL,
+  `current_staff` varchar(255) DEFAULT NULL,
+  `type` varchar(255) DEFAULT NULL,
+  `month_type` int(11) DEFAULT NULL COMMENT '3=3 months or less, 6=6months or less, 9=9months or less, 12=12months or less',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=204987 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
 
 -- SABC result
 select bp.modified `Timestamp`, 
