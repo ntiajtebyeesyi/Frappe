@@ -23,13 +23,13 @@ select bp.staff_no `current_staff`, bp.own_salesperson `owner_staff`, bp.is_sale
 	bp.creation, bp.modified, bp.owner
 from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
 left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
-where bp.is_sales_partner in ('X - ລູກຄ້າປັດຈຸບັນ ທີ່ສົນໃຈເປັນນາຍໜ້າ', 'Y - ລູກຄ້າເກົ່າ ທີ່ສົນໃຈເປັນນາຍໜ້າ', 'Z - ລູກຄ້າໃໝ່ ທີ່ສົນໃຈເປັນນາຍໜ້າ')
+where bp.is_sales_partner in ('X - ລູກຄ້າໃໝ່ ທີ່ສົນໃຈເປັນນາຍໜ້າ', 'Y - ລູກຄ້າເກົ່າ ທີ່ສົນໃຈເປັນນາຍໜ້າ', 'Z - ລູກຄ້າປັດຈຸບັນ ທີ່ສົນໃຈເປັນນາຍໜ້າ')
 	and bp.name not in (select refer_id from tabsme_Sales_partner where refer_type = 'tabSME_BO_and_Plan');
 
 
 -- to make your form can add new record after you import data from tabSME_BO_and_Plan
-alter table tabsme_Sales_partner auto_increment=100284; -- next id
-insert into sme_sales_partner_id_seq select 100284, minimum_value, maximum_value, start_value, increment, cache_size, cycle_option, cycle_count from sme_bo_and_plan_id_seq;
+alter table tabsme_Sales_partner auto_increment=101317; -- next id
+insert into sme_sales_partner_id_seq select 101317, minimum_value, maximum_value, start_value, increment, cache_size, cycle_option, cycle_count from sme_bo_and_plan_id_seq;
 
 
 update tabsme_Sales_partner sp inner join tabSME_BO_and_Plan bp on (bp.name = sp.refer_id and sp.refer_type = 'tabSME_BO_and_Plan')
@@ -50,6 +50,16 @@ update tabSME_BO_and_Plan set is_sales_partner =
 	end;
 
 
+-- check and update fix the definition of sales partner
+select sp.name, sp.refer_id, bp.name , bp.`type` , bp.is_sales_partner, sp.broker_type  
+from tabsme_Sales_partner sp inner join tabSME_BO_and_Plan bp on (sp.refer_id = bp.name and sp.refer_type = 'tabSME_BO_and_Plan')
+
+update tabsme_Sales_partner sp inner join tabSME_BO_and_Plan bp on (sp.refer_id = bp.name and sp.refer_type = 'tabSME_BO_and_Plan')
+set sp.broker_type = case when bp.`type` = 'New' then 'X - ລູກຄ້າໃໝ່ ທີ່ສົນໃຈເປັນນາຍໜ້າ'
+		when bp.`type` = 'Dor' then 'Y - ລູກຄ້າເກົ່າ ທີ່ສົນໃຈເປັນນາຍໜ້າ'
+		when bp.`type` = 'Inc' then 'Z - ລູກຄ້າປັດຈຸບັນ ທີ່ສົນໃຈເປັນນາຍໜ້າ'
+		else sp.broker_type
+		end
 
 
 -- export to google sheet
