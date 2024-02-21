@@ -45,6 +45,52 @@ where ( (bp.rank1 in ('S', 'A', 'B', 'C') and date_format(bp.creation, '%Y-%m-%d
 	or bp.rank_update in ('S', 'A', 'B', 'C') )
 	and bp.contract_status not in ('Contracted', 'Cancelled');
 
+-- _________________________________________________________________ check and update staff no _________________________________________________________________
+select * from temp_sme_pbx_BO tspb; -- 422,582
+
+-- check
+select bp.staff_no, tb.current_staff  from tabSME_BO_and_Plan bp inner join temp_sme_pbx_BO tb on (tb.id = bp.name)
+where bp.staff_no != tb.current_staff;
+
+-- update
+update tabSME_BO_and_Plan bp inner join temp_sme_pbx_BO tb on (tb.id = bp.name)
+set bp.staff_no = tb.current_staff where tb.`type` = 'F'; -- 369,654
+
+update tabSME_BO_and_Plan bp inner join temp_sme_pbx_BO tb on (tb.id = bp.name)
+set tb.current_staff = bp.staff_no where tb.`type` in ('S','A','B','C'); -- 52,928
+
+update tabSME_BO_and_Plan bp inner join tabSME_BO_and_Plan_bk bpk on (bp.name = bpk.name)
+set bp.staff_no = bpk.staff_no where bp.name in (select id from temp_sme_pbx_BO );
+
+-- check
+select * from temp_sme_pbx_SP ; -- 43,283
+
+select sp.name, sp.current_staff, ts.current_staff from tabsme_Sales_partner sp inner join temp_sme_pbx_SP ts on (ts.id = sp.name)
+where sp.current_staff != ts.current_staff ;
+
+-- update 
+update tabsme_Sales_partner sp inner join temp_sme_pbx_SP ts on (ts.id = sp.name)
+set ts.current_staff = sp.current_staff;
+
+-- export to check pbx SP
+select sp.name `id`, sp.broker_tel, null `pbx_status`, null `date`, sp.current_staff
+from tabsme_Sales_partner sp left join sme_org sme on (case when locate(' ', sp.current_staff) = 0 then sp.current_staff else left(sp.current_staff, locate(' ', sp.current_staff)-1) end = sme.staff_no)
+inner join temp_sme_pbx_SP ts on (ts.id = sp.name)
+where sp.refer_type = 'LMS_Broker' -- SP
+	or (sp.refer_type = 'tabSME_BO_and_Plan' and sme.`unit_no` is not null) -- XYZ
+	or (sp.refer_type = '5way' and sp.owner_staff = sp.current_staff and sme.`unit_no` is not null) -- 5way
+order by sme.id ;
+
+
+
+
+
+
+
+
+
+
+
 
 
 
