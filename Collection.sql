@@ -22,7 +22,7 @@ select cb.contract_no, cb.collection_staff,
 		when ac2.gps_status = 'offline' or cb.gps_status = 'offline' then 2 -- GPS Offline
 		when count(ifnull(ac.promise_date, 1)) >= 1 then 3 -- No payment promise
 		when count(ac.promise_date) or ac2.promise_date > date(now()) then 4 -- Break payment primise
-		else 5 -- others
+		else 5 -- Others
 	end `priority` 
 from tabcontract_base cb left join tabActivity_of_collection ac on (ac.contract_no = cb.name)
 left join tabActivity_of_collection ac2 on ac2.name = (select name from tabActivity_of_collection where contract_no = cb.name order by name desc limit 1)
