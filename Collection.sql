@@ -13,20 +13,21 @@ order by sme.id asc;
 
 -- 2) insert collection order to collection and collection CC people
 insert into tabActivity_of_collection (`contract_no`, `collection_staff`, `date`, `collection_method`, `collectioin_result`, `priority`)
-;select cb.contract_no, cb.collection_staff, 
-	case when cb.collection_status = 'already paid' then null else '2024-03-14' end `date`, 
+select cb.contract_no, cb.collection_staff, 
+	case when cb.collection_status = 'already paid' then null else '2024-03-20' end `date`, 
 	case when cb.collection_status = 'already paid' then '' else 'Visit / ລົງຢ້ຽມຢາມ' end `collection_method`, 
 	case when cb.collection_status = 'already paid' then 'Paid / ຈ່າຍ' else null end `collectioin_result`,
 	case when cb.collection_status = 'already paid' then ''
-		when count(ac.exceptional) >=1 then 1
-		when ac2.gps_status = 'offline' or cb.gps_status = 'offline' then 2
-		when count(ifnull(ac.promise_date, 1)) >= 1 then 3
-		when count(ac.promise_date) or ac2.promise_date > date(now()) then 4
-	end `priority`
+		when count(ac.exceptional) >=1 then 1 -- Exceptional case
+		when ac2.gps_status = 'offline' or cb.gps_status = 'offline' then 2 -- GPS Offline
+		when count(ifnull(ac.promise_date, 1)) >= 1 then 3 -- No payment promise
+		when count(ac.promise_date) or ac2.promise_date > date(now()) then 4 -- Break payment primise
+		else 5 -- others
+	end `priority` 
 from tabcontract_base cb left join tabActivity_of_collection ac on (ac.contract_no = cb.name)
 left join tabActivity_of_collection ac2 on ac2.name = (select name from tabActivity_of_collection where contract_no = cb.name order by name desc limit 1)
--- where cb.collection_status != 'already paid'
-group by cb.name 
+ where cb.debt_type != '' and cb.collection_status = '0'
+group by cb.name ;
 
 
 alter table tabActivity_of_collection add is_order int(11)
