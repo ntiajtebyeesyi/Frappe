@@ -83,8 +83,16 @@ update tabsme_Sales_partner
 		then concat('9020',right(regexp_replace(broker_tel , '[^[:digit:]]', ''),8))
 		else concat('9020',right(regexp_replace(broker_tel , '[^[:digit:]]', ''),8))
 	end,
-	broker_type = case when refer_type = 'LMS_Broker' then 'SP - ນາຍໜ້າໃນອາດີດ' else broker_type end
+	broker_type = case when refer_type = 'LMS_Broker' then 'SP - ນາຍໜ້າໃນອາດີດ' else broker_type end,
+	refer_type = case when broker_type = '5way - 5ສາຍພົວພັນ' and refer_type is null then '5way' else refer_type end
 ;
+
+
+
+-- update backup data 
+insert into tabSME_BO_and_Plan select * from tabSME_BO_and_Plan_bk where name not in (select name from tabSME_BO_and_Plan);
+replace into tabSME_BO_and_Plan_bk select * from tabSME_BO_and_Plan; -- Updated Rows	495867
+replace into tabsme_Sales_partner_bk select * from tabsme_Sales_partner; -- Updated Rows	151647
 
 
 
@@ -102,83 +110,6 @@ select bp.staff_no , bp.callcenter_of_sales , bp.double_count , bp.name ,
 from tabSME_BO_and_Plan bp where creation >= date(now())
 
 
--- rank SABCF yesterday need to follow today
-select date_format(bp.creation, '%Y-%m-%d') `Date created`, date_format(bp.modified, '%Y-%m-%d') `Timestamp`, 
-	-- sme.dept `DEPT`, sme.sec_branch `SECT`, sme.unit_no `Unit_no`, sme.unit `Unit`, bp.staff_no `Staff No`, sme.staff_name `Staff Name`, 
-	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.dept else smec.dept end `DEPT`, 
-	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.sec_branch else smec.sec_branch end `SECT`, 
-	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit_no else smec.unit_no end `Unit_no`, 
-	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit else smec.unit end `Unit`, 
-	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then bp.staff_no else regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') end `Staff No`, 
-	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.staff_name else smec.staff_name end `Staff Name`, 
-	bp.rank1, case when bp.rank1 in ('S','A','B','C') then 'SABC' when bp.rank1 = 'F' then 'F' end `group_rank1`,
-	case when bp.contract_status = 'Contracted' then 'Contracted' when bp.contract_status = 'Cancelled' then 'Cancelled' else bp.rank_update end `Now Result`,
-	case when bp.contract_status = 'Contracted' then 'Contracted' when date_format(bp.modified, '%Y-%m-%d') = date_format(bp.creation, '%Y-%m-%d') then 'No follow'
-		when bp.contract_status = 'Cancelled' then 'Cancelled' when bp.rank_update in ('S','A','B','C') then 'SABC' when bp.rank_update in ('F', 'G') then 'F'
-	end `Result after followed`,
-	concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`, concat(bp.maker, ' - ', bp.model, ' (', bp.`year`, ')') `collateral`
-	, bp.customer_name, bp.customer_tel , bp.`type` 
-from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
-left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
-where date_format(bp.creation, '%Y-%m-%d') >= '2024-01-03' and bp.rank1 in ('S','A','B','C','F') and bp.`type` in ('New', 'Dor','Inc')
-order by case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.id else smec.id end asc;
-
-
-select name, owner_staff_no , staff_no  from tabSME_BO_and_Plan tsbap where name in ()
-
-
--- all rank SABCF in the past need to follow today
-select date_format(bp.creation, '%Y-%m-%d') `Date created`, date_format(bp.modified, '%Y-%m-%d') `Timestamp`, 
-	-- sme.dept `DEPT`, sme.sec_branch `SECT`, sme.unit_no `Unit_no`, sme.unit `Unit`, bp.staff_no `Staff No`, sme.staff_name `Staff Name`, 
-	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.dept else smec.dept end `DEPT`, 
-	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.sec_branch else smec.sec_branch end `SECT`, 
-	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit_no else smec.unit_no end `Unit_no`, 
-	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit else smec.unit end `Unit`, 
-	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then bp.staff_no else regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') end `Staff No`, 
-	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.staff_name else smec.staff_name end `Staff Name`, 
-	bp.rank1, case when bp.rank1 in ('S','A','B','C') then 'SABC' when bp.rank1 = 'F' then 'F' end `group_rank1`,
-	case when bp.contract_status = 'Contracted' then 'Contracted' when bp.contract_status = 'Cancelled' then 'Cancelled' else bp.rank_update end `Now Result`,
-	case when bp.contract_status = 'Contracted' then 'Contracted' when date_format(bp.modified, '%Y-%m-%d') < '2023-09-28' then 'No follow'
-		when bp.contract_status = 'Cancelled' then 'Cancelled' when bp.rank_update in ('S','A','B','C') then 'SABC' when bp.rank_update in ('F', 'G') then 'F'
-	end `Result today`,
-	concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`, bp.name
-from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
-left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
-where (bp.rank_update in ('S','A','B','C', 'F') or bp.list_type is not null )
-	and case when bp.contract_status = 'Contracted' and bp.disbursement_date_pay_date < date(now()) then 0 else 1 end != 0 -- if contracted before '2023-09-01' then not need
-	and case when bp.contract_status = 'Cancelled' and date_format(bp.modified, '%Y-%m-%d') < date(now()) then 0 else 1 end != 0 -- if cencalled before '2023-09-01' then not need
-	and bp.`type` in ('New', 'Dor', 'Inc') -- new only 3 products
-	and date_format(bp.creation, '%Y-%m-%d') < date(now())
-	and case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit_no else smec.unit_no end is not null
-order by case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit_no else smec.unit_no end asc;
-
-
-
--- visit result https://docs.google.com/spreadsheets/d/16W3U7r1WCSONrnFZdSXwb_1iNCbhCxCl2mmmWidhupI/edit#gid=266017824
-select bp.modified `Date`, bp.contract_no , bp.name `customer_id` , bp.customer_name , bp.customer_tel `phone1` , null `phone2`, bp.`type`, 
-	sme.dept `DEPT`, sme.sec_branch `SECT`, sme.unit_no `Unit_no`, sme.unit `Unit`,
-	sme.staff_no `Staff No`, sme.staff_name `Staff Name`, bp.visit_date , null `The reason of visit`, left(bp.visit_or_not, locate('-', bp.visit_or_not)-2) `Visit or not`,
-	null `collateral`, null `Interested in product`, null `Negotiate with`, 
-	case when bp.rank_update = 'S' then 'S ຕ້ອງການເງິນໃນມື້ນີ້ມື້ອຶ່ນ' when bp.rank_update = 'A' then 'A ຕ້ອງການເງິນພາຍໃນອາທິດໜ້າ' when bp.rank_update = 'B' then 'B ຕ້ອງການເງິນພາຍໃນເດືອນນີ້'
-		when bp.rank_update = 'C' then 'C ຕ້ອງການເງິນພາຍໃນເດືອນໜ້າ' when bp.rank_update = 'F' then 'F ຮູ້ຂໍ້ມູນລົດແຕ່ຍັງບໍ່ຕ້ອງການ' 
-	end `Rank`,
-	null `Negotiations`, bp.evidence `Negotiation documents`, bp.visit_location_url `Location`,
-	bp.disbursement_date_pay_date `Date will contract`, bp.usd_loan_amount `Loan amount (USD)`, concat(bp.maker, ' ', bp.model) `Details of Collateral`, bp.usd_value `Asset value (USD)`,
-	bp.visit_checker, bp.actual_visit_or_not, bp.comment_by_visit_checker,
-	concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`
-from tabSME_BO_and_Plan bp left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
-where bp.visit_date >= date(now()) and bp.visit_date is not null
-	-- and left(bp.visit_or_not, locate('-', bp.visit_or_not)-2) = 'Yes' 
-order by bp.visit_date ;
-
-
-select sme.dept `DEPT`, sme.sec_branch `SECT`, sme.unit_no `Unit_no`, sme.unit `Unit`,
-	bp.staff_no `Staff No`, sme.staff_name `Staff Name`, bp.visit_date, left(bp.visit_or_not, locate('-', bp.visit_or_not)-2) `Visit or not`,
-	bp.name `customer_id` , bp.customer_name , bp.customer_tel `phone1` , null `phone2`, bp.`type`,
-	concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`
-from tabSME_BO_and_Plan bp left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
-where bp.visit_date between '2023-12-01' and date(now()) and bp.visit_date is not null
-order by bp.visit_date asc, sme.id asc, left(bp.visit_or_not, locate('-', bp.visit_or_not)-2) desc;
 
 
 -- check and update wrong amount 
@@ -191,10 +122,11 @@ select case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' t
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then bp.staff_no else regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') end `Staff No`, 
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.staff_name else smec.staff_name end `Staff Name`, 
 	`type`, bp.usd_loan_amount, 
-	bp.normal_bullet , bp.contract_no , bp.case_no , bp.customer_name, date_format(bp.creation, '%Y-%m-%d') 'Date created', bp.rank_update
-from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
+	bp.normal_bullet , bp.contract_no , bp.case_no , bp.customer_name, date_format(bp.creation, '%Y-%m-%d') 'Date created', bp.rank_update,
+	concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`
+from tabSME_BO_and_Plan bp left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
 left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
-where bp.usd_loan_amount >= 100000;
+where bp.usd_loan_amount >= 100000 order by sme.id desc;
 
 
 
@@ -211,27 +143,45 @@ update tabSME_BO_and_Plan set is_sales_partner = 'No-ບໍ່ສົນໃຈ' w
 
 
 -- BO https://docs.google.com/spreadsheets/d/1rKhGY4JN5N0EZs8WiUC8dVxFAiwGrxcMp8-K_Scwlg4/edit#gid=1793628529&fvid=551853106
-select sme.staff_no, 1 `case`, case when bp.`type` = 'New' then 'NEW' when bp.`type` = 'Dor' then 'DOR' when bp.`type` = 'Inc' then 'INC' end `type`,
+replace into SME_BO_and_Plan_report 
+select case when bpr.date_report is null then date(now()) else bpr.date_report end `date_report`, sme.staff_no, 1 `case`, case when bp.`type` = 'New' then 'NEW' when bp.`type` = 'Dor' then 'DOR' when bp.`type` = 'Inc' then 'INC' end `type`,
 	bp.usd_loan_amount, bp.case_no, bp.contract_no, -- bp.customer_name, 
 	concat('=HYPERLINK("http://13.250.153.252:8000/app/sme_bo_and_plan/"&',bp.name,',', '"' , bp.customer_name, '"',')' ) `customer_name`,
+	bp.rank_update,
 	case when bp.contract_status = 'Contracted' then 'Contracted' when bp.contract_status = 'Cancelled' then 'Cancelled' 
 		when bp.ringi_status = 'Approved' then 'APPROVED' when bp.ringi_status = 'Pending approval' then 'PENDING' 
 		when bp.ringi_status = 'Draft' then 'DRAFT' when bp.ringi_status = 'Not Ringi' then 'No Ringi' 
-	end `Now Result`, 
-	bp.disbursement_date_pay_date , 'ແຜນເພີ່ມ' `which`, bp.name, case when bp.credit_remark is not null then bp.credit_remark else bp.contract_comment end `comments`
+	end `now_result`, 
+	bp.disbursement_date_pay_date , 'ແຜນເພີ່ມ' `which`, bp.name `id`, case when bp.credit_remark is not null then bp.credit_remark else bp.contract_comment end `comments`
 from tabSME_BO_and_Plan bp left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
- where bp.name in (196112,205451,205453,207268,209487,208388,207238,212055,213741,214126,215326,201854,209070,207281,212228,212229,212678,215258,201851,212937,214736,214581,200347,212220,212222,208716,214824,208158,201812,207774,208652,212226,240,199777,201773,202457,203182,201849,212887,209066,201919,203664,96467,212231,212943,214958,200977,199530,209377,196215,213958,214893,209399,205750,211672,213819,214468,215285,209677,207271,209666,212216,212224,214818,209470,209663,214913,213865,214040,206253,207287,208455,209493,209532,209591,213322,214242,214245,203152,204247,204933,209078,198139,198845,201631,201990,209200,208764,204926,209230,206284,207251,211462,213791,214094,208040,210616,205583,206335,193208,205624,213766,214543,201881,202034,207024,211928,200637,212207,206376,210177,212494,205732,207266,213841,212201,205318,206278,206263,206569,210017,214593,206191,207048,209008,209656,211117,209764,212351,214007,214662,212976,213443,203150,207350,209397,203318,206962,206342,210806,213564,215242,192396,204444,205373,208627,210180,211938,212599,214277,206298,211293,200704,200846,109712,202655,208230,63804,116104,214194,214716,108896,202239,110169,206472,205158,214198,199468,200187,211899,212230,214707,214731,214796,214678,211963,211069,214555,212665,214580,213087,214312,214316,192981,114390,112275,202311,100072,117675,202166,21195,21186,213382,197842,202874,207041,208811,210153,211492,214607,209179,211490,203146,209490,211942,213091,208392,212878,197449,205740,197673,198615,199446,201124,203231,205449,207984,211989,212779,213067,205720,209279,212709,203007,209023,208218,210012,211018,214343,213927,208562,208554,194292,203109,206070,208904,212624,213318,215065,215328,201760,205501,207942,206474,196535,199121,13341,109411,201828,198129,212831,199111,200911,200517,194763,201916,203397,206017,211768,212860,207957,214216,202557,211446,212657,210077,213372,209484,214310,203151,210375,212314,213051,209453,210430,212213,212672,213964,198962,202223,207633,204622,210094,211871,25533,213595,214429,214772,214215,214383,210551,214176,214174,207283,210351,212925,214124,213776,214119,213775,214125,205774,206592,207267,208379,210683,215246,117382,209916,212278,205285,208759,206815,212682,205734,214897,202899,201994,214243,211566,214535,202195,200985,205869,211789,213715,214602,205804,205085,205646,205515,206093,206717,206721,206984,207574,208687,209266,208533,210070,210163,209799,211242,211530,212952,213934,214286,214608,211442,212384,214436,213877,213935,214426,205593,205751,205785,206454,207823,208007,208862,210540,207499,210580,211097,212587,212702,205780,209382,201910,206299,206682,207735,208660,212014,212373,212386,213727,213876,213924,215102,215187,215228,66463,201454,206203,207716,211023,213459,206535,214747,204721,207274,208242,208699,213780,214362,113370,200594,200906,212382,213264,214630,214266,214615,213023,214622,214726,202365,206565,209222,213239,208848,209872,211198,211355,206120,208391,209120,210337,211749,209659,213219,202697,206180,208510,210565,211974,214264,206819,214314,206005,211830,213767,214522,198742,62219,212944,198687,198816,204616,211273,212948,212949,215053,30002,204871,202635,203013,204178,209339,210621,211992,198517,213840,214023,213203,199122,202248,202435,203456,209745,214341,201234,213269,197168,203168,202088,205377,206055,208042,213475,208029,214132,214131,198724,201835,206078,200230,205939,212172,213346,202077,205417,206680,208385,213431,192943,196919,200177,200490,202372,203657,205125,207270,213281,200923,208891,214501,213988,202251,207390,201858,202165,202048,202703,202707,203627,197932,211995,199415,200327,213019,202261,213845,204789,205075,205448,205662,205753,207263,208364,208333,209238,214051,210744,212348,212355,205505,199036,200235,213100,206002,207528,210863,199407,202256,202770,205636,203193,209057,209866,211636,212695,213418,33387,206517,205807,208556,212383,197116,199833,202389,204433,204437,205805,211294,212581,213101,204404,212947) order by field(bp.name, 196112,205451,205453,207268,209487,208388,207238,212055,213741,214126,215326,201854,209070,207281,212228,212229,212678,215258,201851,212937,214736,214581,200347,212220,212222,208716,214824,208158,201812,207774,208652,212226,240,199777,201773,202457,203182,201849,212887,209066,201919,203664,96467,212231,212943,214958,200977,199530,209377,196215,213958,214893,209399,205750,211672,213819,214468,215285,209677,207271,209666,212216,212224,214818,209470,209663,214913,213865,214040,206253,207287,208455,209493,209532,209591,213322,214242,214245,203152,204247,204933,209078,198139,198845,201631,201990,209200,208764,204926,209230,206284,207251,211462,213791,214094,208040,210616,205583,206335,193208,205624,213766,214543,201881,202034,207024,211928,200637,212207,206376,210177,212494,205732,207266,213841,212201,205318,206278,206263,206569,210017,214593,206191,207048,209008,209656,211117,209764,212351,214007,214662,212976,213443,203150,207350,209397,203318,206962,206342,210806,213564,215242,192396,204444,205373,208627,210180,211938,212599,214277,206298,211293,200704,200846,109712,202655,208230,63804,116104,214194,214716,108896,202239,110169,206472,205158,214198,199468,200187,211899,212230,214707,214731,214796,214678,211963,211069,214555,212665,214580,213087,214312,214316,192981,114390,112275,202311,100072,117675,202166,21195,21186,213382,197842,202874,207041,208811,210153,211492,214607,209179,211490,203146,209490,211942,213091,208392,212878,197449,205740,197673,198615,199446,201124,203231,205449,207984,211989,212779,213067,205720,209279,212709,203007,209023,208218,210012,211018,214343,213927,208562,208554,194292,203109,206070,208904,212624,213318,215065,215328,201760,205501,207942,206474,196535,199121,13341,109411,201828,198129,212831,199111,200911,200517,194763,201916,203397,206017,211768,212860,207957,214216,202557,211446,212657,210077,213372,209484,214310,203151,210375,212314,213051,209453,210430,212213,212672,213964,198962,202223,207633,204622,210094,211871,25533,213595,214429,214772,214215,214383,210551,214176,214174,207283,210351,212925,214124,213776,214119,213775,214125,205774,206592,207267,208379,210683,215246,117382,209916,212278,205285,208759,206815,212682,205734,214897,202899,201994,214243,211566,214535,202195,200985,205869,211789,213715,214602,205804,205085,205646,205515,206093,206717,206721,206984,207574,208687,209266,208533,210070,210163,209799,211242,211530,212952,213934,214286,214608,211442,212384,214436,213877,213935,214426,205593,205751,205785,206454,207823,208007,208862,210540,207499,210580,211097,212587,212702,205780,209382,201910,206299,206682,207735,208660,212014,212373,212386,213727,213876,213924,215102,215187,215228,66463,201454,206203,207716,211023,213459,206535,214747,204721,207274,208242,208699,213780,214362,113370,200594,200906,212382,213264,214630,214266,214615,213023,214622,214726,202365,206565,209222,213239,208848,209872,211198,211355,206120,208391,209120,210337,211749,209659,213219,202697,206180,208510,210565,211974,214264,206819,214314,206005,211830,213767,214522,198742,62219,212944,198687,198816,204616,211273,212948,212949,215053,30002,204871,202635,203013,204178,209339,210621,211992,198517,213840,214023,213203,199122,202248,202435,203456,209745,214341,201234,213269,197168,203168,202088,205377,206055,208042,213475,208029,214132,214131,198724,201835,206078,200230,205939,212172,213346,202077,205417,206680,208385,213431,192943,196919,200177,200490,202372,203657,205125,207270,213281,200923,208891,214501,213988,202251,207390,201858,202165,202048,202703,202707,203627,197932,211995,199415,200327,213019,202261,213845,204789,205075,205448,205662,205753,207263,208364,208333,209238,214051,210744,212348,212355,205505,199036,200235,213100,206002,207528,210863,199407,202256,202770,205636,203193,209057,209866,211636,212695,213418,33387,206517,205807,208556,212383,197116,199833,202389,204433,204437,205805,211294,212581,213101,204404,212947);
-where (bp.rank_update in ('S','A','B','C') or bp.list_type is not null ) 
+--	where bp.name in (214194,206472,214738,577726,116306,582845,583603,583946,583963,586586,587604,589618,583154,583739,580293,583651,585834,587190,588815,590793,590857,590621,584982,584065,583889,584349,585035,587720,589617,590552,590986,583558,583617,214642,577577,218215,584370,587194,588819,589484,590159,584134,206005,584460,584453,586254,588774,589615,590508,589931,583570,583576,584408,586962,585786,585774,587512,584010,584011,586630,587277,590214,197842,208811,584458,588959,589872,584910,583599,583953,583948,583950,586561,587747,588359,588883,589860,590794,581298,214232,583873,583516,219300,586712,586599,587748,587815,589997,180932,584390,590177,584403,588791,584444,585926,209200,584133,584412,584949,587304,584339,583883,589081,583609,583913,585595,199468,214707,214731,584024,584396,589163,583700,580692,581131,583875,584074,584383,585365,586432,586652,587853,587294,583938,590459,584398,586577,576820,590103,586239,586995,588035,588781,589610,590287,585600,588089,589464,587609,21193,584072,584099,584009,584421,587629,589990,583891,586607,587630,590003,202195,205869,214602,577217,583228,586965,587332,588778,583359,583992,583997,585629,587752,589653,590526,580960,583749,584062,584369,587196,216705,583733,583695,583736,583704,583906,584384,584397,585306,589062,580949,584064,585590,586422,588351,583701,584070,584067,584897,584429,583901,590382,219213,580247,584057,586635,205804,590370,205501,584053,584364,590815,583386,584393,584392,576957,584060,587326,203657,101629,579676,581381,581666,584052,584577,584436,585122,214501,582182,583639,583698,587792,202251,207390,589534,203627,582458,585835,587160,587189,583703,584432,584993,588370,590263,583988,584970,218667,583638,583956,586554,589935,583074,206419,585877,216358,207735,208660,212014,215228,216240,219374,580181,580933,580761,581340,581893,582825,583210,584252,586945,586610,587805,587800,589064,588810,590105,588822,580956,201454,213459,579029,582830,587402,218784,581362,581372,584340,584413,584941,207274,217659,579107,580589,580154,581184,583061,583861,584261,584300,585548,586335,587188,217374,218255,581985,584391,585791,588992,589502,590810,208242,580318,581508,580292,583894,584523,586588,586643,206191,587601,587843,589649,590801,584008,588225,205285,583978,584440,586602,576893,585982,588079,212709,576976,590005,584399,580080,583702,584073,589097,583679,198816,580053,585668,215147,215110,581287,584106,580049,583557,583569,584244,587173,584141,586242,588053,580115,581273,582311,218614,218628,580901,580229,580896,581392,582139,582419,583551,584144,587581,582511,583107,583553,583786,583922,585779,586997,587450,589881,590547,585856,586627,587552,588220,587740,588382,589929,199122,202248,202435,203456,209745,214341,101584,216437,578483,580199,583872,584038,589123,583932,583924,584395,584861,201124,203231,207984,583989,583995,583888,584431,587099,588215,589923,590467,589916,584426,583721,584402,212220,208716,580722,583600,583690,581804,587003,580323,217921,585076,584126,583943,583658,584029,583642,583657,583619,589879,585861,218093,584091,583719,583722,583718,581643,586590,589632,589882,578169,580086,584302,586846,587625,588818,215262,588223,590551,582523,584022,586713,580962,583961,584082,584854,590399,217153,209532,213322,583936,583893,584644,584136,590378,584409,584411,584439,586538,589936,584118,583902,199777,202457,203182,580940,582194,583161,590123,584000,587465,584025,583627,586625,581811,587113,589087,589932,583933,584005,584245,584027,584016,584030,584026,584380,584378,584379,584376,585722,587089,589619,590323,584015,214343,584424,590330,583813,587166,590524,201234,581992,584218,589523,589174,590095,590861,197449,584312,582290,585810,586834,579287,589662,580963,213376,582709,583870,584406,589838,584226,584333,587529,588702,583867,583921,583923,584456,586629,586640,583916,586634,583850,583851,584197,584425,587290,590154,584044,584859,588904,589861,584040,585118,197116,213101,578589,584041,586460,584042,586458,590856) 
+-- order by field(bp.name, select id from SME_BO_and_Plan_report);
+left join SME_BO_and_Plan_report bpr on (bpr.id = bp.name)
+where ((bp.rank_update in ('S','A','B','C') or bp.list_type is not null )
 	and case when bp.contract_status = 'Contracted' and bp.disbursement_date_pay_date < '2023-12-06' then 0 else 1 end != 0 -- if contracted before '2023-09-29' then not need
-	and bp.disbursement_date_pay_date between '2024-02-13' and '2024-02-29'  and date_format(bp.modified, '%Y-%m-%d') >= '2024-02-13'
+	and bp.disbursement_date_pay_date between date(now()) and '2024-05-31' -- and date_format(bp.modified, '%Y-%m-%d') >= date(now())
 	and bp.ringi_status != 'Rejected' -- and bp.contract_status != 'Cancelled'
+	) or bp.name in (select id from SME_BO_and_Plan_report)
 order by sme.id ;
 
-select * from tabSME_BO_and_Plan tsbap where name = 209279
+select * from SME_BO_and_Plan_report bpr ;
 
--- update backup data 
-replace into tabSME_BO_and_Plan_bk select * from tabSME_BO_and_Plan; -- Updated Rows	190082
-replace into tabsme_Sales_partner_bk select * from tabsme_Sales_partner; -- Updated Rows	196024
+
+select bpr.* , case when bp.modified >= date(now()) then 'called' else 0 end `is_call_today`, sme.id 
+from SME_BO_and_Plan_report bpr left join tabSME_BO_and_Plan bp on (bpr.id = bp.name)
+left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
+-- where (bpr.now_result not in ('Contracted', 'Cancelled') and bpr.date_report < '2024-04-01') or bpr.date_report >= '2024-04-01'
+order by sme.id asc ;
+
+
+reset query cache;
+flush query cache;
+show processlist;
+kill connection 5833331;
+
+CREATE INDEX tabSME_BO_and_Plan_rank1_IDX USING BTREE ON tabSME_BO_and_Plan (rank1);
+
+
 
 -- xyz to import to tabsme_Sales_partner
 insert into tabsme_Sales_partner (`current_staff`, `owner_staff`, `broker_type`, `broker_name`, `broker_tel`, `address_province_and_city`, `address_village`, `business_type`,
@@ -246,42 +196,108 @@ where bp.is_sales_partner in ('X - ລູກຄ້າໃໝ່ ທີ່ສົ�
 
 -- to make your form can add new record after you import data from tabSME_BO_and_Plan
 select max(name)+1 `next_not_cached_value` from tabsme_Sales_partner;
-alter table tabsme_Sales_partner auto_increment= 110532 ; -- next id
+alter table tabsme_Sales_partner auto_increment= 198311 ; -- next id
 insert into sme_sales_partner_id_seq select (select max(name)+1 `next_not_cached_value` from tabsme_Sales_partner), minimum_value, maximum_value, start_value, increment, cache_size, cycle_option, cycle_count 
 from sme_bo_and_plan_id_seq;
 
 
+-- export to check pbx XYZ
+select sp.name `id`, sp.broker_tel, null `pbx_status`, null `date`, sp.current_staff
+from tabsme_Sales_partner sp left join sme_org sme on (case when locate(' ', sp.current_staff) = 0 then sp.current_staff else left(sp.current_staff, locate(' ', sp.current_staff)-1) end = sme.staff_no)
+inner join temp_sme_pbx_SP ts on (ts.id = sp.name)
+where sp.refer_type = 'tabSME_BO_and_Plan' and sme.`unit_no` is not null -- if resigned staff no need
+order by sme.id ;
+
+select COUNT(*) 
+from tabsme_Sales_partner sp left join sme_org sme on (case when locate(' ', sp.current_staff) = 0 then sp.current_staff else left(sp.current_staff, locate(' ', sp.current_staff)-1) end = sme.staff_no)
+left join temp_sme_pbx_SP ts on (ts.id = sp.name)
+where sp.refer_type = 'tabSME_BO_and_Plan' -- and sme.`unit_no` is not null -- if resigned staff no need
+order by sme.id ;
 
 
--- SABC result
-select bp.modified `Timestamp`, 
-	bp.name `id`,
-	sme.unit_no `Unit_no`, 
-	sme.unit `Unit`, 
-	sme.staff_no `Staff No`, 
-	bp.own_salesperson ,
-	sme.staff_name `Staff Name`, 
-	bp.usd_loan_amount, bp.customer_name, bp.customer_tel,
-	-- concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`,
-	case when rank_S_date >= '2023-12-01' then 'S' when rank_A_date >= '2023-12-28' then 'A' when rank_B_date >= '2023-12-28' then 'B' when rank_C_date >= '2023-12-28' then 'C' else bp.rank_update end `rank_update`,
-	is_sales_partner `SP_rank`, 
-	case when bp.modified >= '2023-12-28' then 'Called' else '-' end `Call or not (only date)`,
-	case when bp.modified >= '2023-12-28' and (bp.rank_update in ('S', 'A', 'B', 'C', 'F', 'G', 'FFF') or bp.contract_status in ('Contracted', 'Cancelled')) then 'Called' else '-' end `Call or not (date and rank)`,
-	tb.pbx_status `LCC check`, 
-	case when rank_S_date >= '2023-12-28' or rank_A_date >= '2023-12-28' or rank_B_date >= '2023-12-28' or rank_C_date >= '2023-12-28' then 1 else 0 end `visit target`,
-	bp.visit_or_not , 
-	bp.disbursement_date_pay_date, bp.ringi_status,
-	case when bp.contract_status = 'Contracted' then 'Contracted' when bp.contract_status = 'Cancelled' then 'Cancelled' else bp.rank_update end `Now Result`,
-	case when bp.modified < date(now()) then '-' when bp.contract_status = 'Contracted' then 'Contracted' when bp.contract_status = 'Cancelled' then 'Cancelled' else bp.rank_update end `rank of call today`
-from tabSME_BO_and_Plan bp left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
-left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
-inner join temp_sme_pbx_BO tb on (tb.id = bp.name)
-where bp.name in (select id from temp_sme_pbx_BO where `type` in ('SABC', 'S', 'A', 'B', 'C') ) 
-order by sme.id asc;
+select count(*) from tabSME_BO_and_Plan bp left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
+where rank_update = 'G' and sme.`unit_no` is not null ;
 
+select COUNT(*) 
+from tabsme_Sales_partner sp left join sme_org sme on (case when locate(' ', sp.current_staff) = 0 then sp.current_staff else left(sp.current_staff, locate(' ', sp.current_staff)-1) end = sme.staff_no)
+left join temp_sme_pbx_SP ts on (ts.id = sp.name)
+where sp.refer_type = 'tabSME_BO_and_Plan' -- and sme.`unit_no` is not null -- if resigned staff no need
+order by sme.id ;
+
+-- --------------------------------------------------------------------------------
+select * from tabSME_BO_and_Plan tsbap order by name desc limit 10 -- name before import 219602
+
+select name, customer_tel, custtbl_id from tabSME_BO_and_Plan tsbap where name >= 219602 and custtbl_id is not null
+
+-- to make your form can add new record after you import data from tabSME_BO_and_Plan
+select max(name)+1 `next_not_cached_value` from tabSME_BO_and_Plan;
+alter table tabSME_BO_and_Plan auto_increment= 576771 ; -- next id
+insert into sme_bo_and_plan_id_seq select (select max(name)+1 `next_not_cached_value` from tabSME_BO_and_Plan), minimum_value, maximum_value, start_value, increment, cache_size, cycle_option, cycle_count 
+from sme_bo_and_plan_id_seq;
+
+
+select * from tabsme_Sales_partner tsp where name in (292,293,294,295,858,859,860,861,862,863,864,865,866,867,868,869,870,871,872,873,874,908,947,948,1018,2163,2679,2735,2931,3100,3443,3811,3921,4258,4511,4740,5072,5126,5229,5545,96971)
+
+update tabsme_Sales_partner set current_staff = '1453 - AON'
+where name in (292,293,294,295,858,859,860,861,862,863,864,865,866,867,868,869,870,871,872,873,874,908,947,948,1018,2163,2679,2735,2931,3100,3443,3811,3921,4258,4511,4740,5072,5126,5229,5545,96971)
+
+-- check
+select bp.staff_no, tb.current_staff  from tabSME_BO_and_Plan bp inner join temp_sme_pbx_BO tb on (tb.id = bp.name)
+where bp.staff_no != tb.current_staff;
+
+-- update
+update tabSME_BO_and_Plan bp inner join temp_sme_pbx_BO tb on (tb.id = bp.name)
+set bp.staff_no = tb.current_staff where tb.`type` = 'F'; -- 369,654
+
+update tabSME_BO_and_Plan bp inner join temp_sme_pbx_BO tb on (tb.id = bp.name)
+set bp.staff_no = tb.current_staff where tb.`type` in ('S','A','B','C'); -- 52,928
+
+update tabSME_BO_and_Plan bp inner join tabSME_BO_and_Plan_bk bpk on (bp.name = bpk.name)
+set bp.staff_no = bpk.staff_no where bp.name in (select id from temp_sme_pbx_BO );
+
+-- check
+select * from temp_sme_pbx_SP ; -- 43,283
+
+select sp.name, sp.current_staff, ts.current_staff from tabsme_Sales_partner sp inner join temp_sme_pbx_SP ts on (ts.id = sp.name)
+where sp.current_staff != ts.current_staff ;
+
+-- update 
+update tabsme_Sales_partner sp inner join temp_sme_pbx_SP ts on (ts.id = sp.name)
+set sp.current_staff = ts.current_staff;
+
+-- export to check pbx SP
+select sp.name `id`, sp.broker_tel, null `pbx_status`, null `date`, sp.current_staff
+from tabsme_Sales_partner sp left join sme_org sme on (case when locate(' ', sp.current_staff) = 0 then sp.current_staff else left(sp.current_staff, locate(' ', sp.current_staff)-1) end = sme.staff_no)
+inner join temp_sme_pbx_SP ts on (ts.id = sp.name)
+where sp.refer_type = 'LMS_Broker' -- SP
+	or (sp.refer_type = 'tabSME_BO_and_Plan' and sme.`unit_no` is not null) -- XYZ
+	or (sp.refer_type = '5way' and sp.owner_staff = sp.current_staff and sme.`unit_no` is not null) -- 5way
+order by sme.id ;
+
+
+
+select *, left(sp.current_staff, locate(' ', sp.current_staff)-1) from tabsme_Sales_partner sp
+where left(sp.current_staff, locate(' ', sp.current_staff)-1) in ('387', '')
+
+select refer_id , business_type  from tabsme_Sales_partner sp where sp.refer_type = 'LMS_Broker'
+
+
+
+insert into temp_sme_2
+select name, custtbl_id, row_numbers, now() `time` from ( 
+		select name, custtbl_id, row_number() over (partition by custtbl_id order by name) as row_numbers  
+		from tabSME_BO_and_Plan 
+		where name >= 219602 and custtbl_id is not null
+		) as t1
+	where row_numbers > 1; -- done <= 1068
+
+
+select * from tabSME_BO_and_Plan where name in (select name from temp_sme_2 )
+
+delete from tabSME_BO_and_Plan where name in (select name from temp_sme_2 )
 
 -- 
-insert into tabSME_BO_and_Plan; select * from tabSME_BO_and_Plan_bk where name not in (select name from tabSME_BO_and_Plan);
+
 
 select * from tabsme_Sales_partner_bk where name not in (select name from tabsme_Sales_partner);
 
@@ -293,7 +309,17 @@ set bp.staff_no = te.name where bp.name in (72451, 72623, 75313, 77608) and bp.s
 
 
 -- SABC export the current list 
-select * from temp_sme_pbx_BO tspb;
+update tabSME_BO_and_Plan bp inner join temp_sme_pbx_BO tb on (tb.id = bp.name)
+set tb.current_staff = bp.staff_no where tb.`type` = 'F'
+
+select * from temp_sme_pbx_BO tspb where `type` = 'F' and month_type <= 6; -- 30,292
+
+select count(*)
+from tabSME_BO_and_Plan bp left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
+-- left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
+inner join temp_sme_pbx_BO tb on (tb.id = bp.name)
+where bp.name in (select id from temp_sme_pbx_BO where `type` in ('F') and month_type <= 6)
+order by sme.id asc;
 
 -- SABC Additional list for SABC less or 1 year
 select bp.name `id`, bp.customer_tel, null `pbx_status`, null `date`, staff_no `current_staff`, 
@@ -306,11 +332,31 @@ where ( (bp.rank1 in ('S', 'A', 'B', 'C') and date_format(bp.creation, '%Y-%m-%d
 	and bp.contract_status not in ('Contracted', 'Cancelled');
 
 
+-- SABC update
+select bp.name `id`, bp.customer_tel, null `pbx_status`, null `date`, 
+	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then bp.staff_no else bp.callcenter_of_sales end `current_staff`,
+	case when bp.rank_update in ('S', 'A', 'B', 'C') then bp.rank_update else bp.rank1 end `type`, 
+	case when timestampdiff(month, bp.creation, date(now())) = 0  then 1
+		when timestampdiff(month, bp.creation, date(now())) > 36 then 36 
+		else timestampdiff(month, bp.creation, date(now())) 
+	end `month_type`,
+	case when bp.contract_status = 'Contracted' then 'Contracted' when bp.contract_status = 'Cancelled' then 'Cancelled' else bp.rank_update end `Now Result`,
+	bp.address_province_and_city
+from tabSME_BO_and_Plan bp left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
+left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
+where ( bp.rank1 in ('S', 'A', 'B', 'C') or bp.rank_update in ('S', 'A', 'B', 'C') 
+		or bp.name in (select id from temp_sme_pbx_BO where type in ('S', 'A', 'B', 'C') ) )
+	and case when bp.contract_status = 'Contracted' then 'Contracted' when bp.contract_status = 'Cancelled' then 'Cancelled' else bp.rank_update end != 'Contracted'
 
+
+select staff_no, name from tabsme_Employees ;
+select * from temp_sme_pbx_BO where type in ('S', 'A', 'B', 'C');
+delete from temp_sme_pbx_BO where type in ('S', 'A', 'B', 'C');
 
 -- update
 update tabSME_BO_and_Plan bp inner join temp_sme_pbx_BO tb on (tb.id = bp.name)
-set bp.staff_no = tb.current_staff 
+set bp.staff_no = tb.current_staff;
+
 
 
 select sp.name, sp.current_staff, sp.owner_staff , te.name , te.staff_no 
@@ -325,7 +371,7 @@ where sp.owner_staff != te.name
 -- Yoshi request
 select bp.name `id`, date_format(bp.creation, '%Y-%m-%d') `date create`, bp.customer_name, bp.customer_tel , 
 	case when timestampdiff(year, date_format(bp.creation, '%Y-%m-%d'), date(now())) =0 then 1 
-	else timestampdiff(year, date_format(bp.creation, '%Y-%m-%d'), date(now())) end `year_type`,
+	else timestampdiff(year, date_format(bp.creation, '%Y-%m-%d'), date(now())) end `year_type`, -- 
 	case when tspb.id is not null then tspb.month_type else timestampdiff(month, date_format(bp.creation, '%Y-%m-%d'), date(now())) end `month_type`,
 	bp.rank1, 
 	case when bp.contract_status = 'Contracted' then 'Contracted' else bp.rank_update end `type`,
@@ -342,41 +388,132 @@ where bp.rank1 in ('S', 'A', 'B', 'C', 'F') ;
 
 
 
--- ------------------------------------ sme orgstaff ------------------------------------
-create table `sme_orgstaff` (
-	`id` int(11) not null auto_increment,
-	`staff_no` varchar(255) default null,
-	`staff_name` varchar(255) default null,
-	`gender` varchar(255) default null,
-	`first_name_lo` varchar(255) default null,
-	`last_name_lo` varchar(255) default null,
-	`first_name_en` varchar(255) default null,
-	`last_name_en` varchar(255) default null,
-	`branch` varchar(255) default null,
-	`department` date not null,
-	`job_title` varchar(255) default null,
-	primary key (`id`)
-) engine=InnoDB auto_increment=1 default charset=utf8;
 
 
-drop table sme_orgstaff 
+-- Email management  https://docs.google.com/spreadsheets/d/1y_aoS_10n_FAqgWbbaURD9D79WN--wgR5Ih3QwLWTag/edit#gid=659979462
+select name, username, first_name, last_name , gender, birth_date, phone , mobile_no, time_zone from tabUser 
+-- where name = 'sayphone.s@lalco.la'
+order by creation desc;
 
 
-
-
-alter table tabSME_Collection rename column call_by to who_call;
+-- export HR system
+select ha.name, date_format(ha.creation, '%Y-%m-%d') `date created`, date_format(ha.modified, '%Y-%m-%d') `date updated`,
+	ha.office, ha.branch, ha.department, ha.head_of_department, ha.staff_no, 
+	ha.category, ha.first_leave_date, ha.end_leave_date, ha.number_of_leave_day, 
+	ha.reason, ha.detail_of_reason, concat('http://13.250.153.252:8000', replace(replace(ha.evidence, '/private', '' ), ' ', '%20' )) `evidence`,
+	ha.workflow_state,
+	concat('http://13.250.153.252:8000/app/hr_absence/', name) `Edit`
+from tabHR_Absence ha ;
 
 
 
 
+select address_province_and_city, count(*)
+from tabSME_BO_and_Plan
+where rank_update in ('G', 'G1', 'G2')
+group by address_province_and_city 
+
+select distinct address_province_and_city from tabSME_BO_and_Plan
+
+
+
+-- select data to show in google sheet and looker studio
+select cb.contract_no, sme.`g-dept`, sme.dept, sme.sec_branch, sme.unit, cb.sales_staff, cb.collection_staff, cb.collection_cc_staff,
+	cb.customer_name, cb.debt_type, cb.collection_status, cb.now_amount_usd, ac.date, ac.collection_method, ac.call_result, ac.visited_result,
+	ac.rank_of_case, ac.next_policy, ac.policy_due_date, ac.promise_date,
+	concat('http://13.250.153.252:8000/app/activity_of_collection/', ac.name) `edit`,
+	ac.priority,
+	ac.collectioin_result, ac.is_order
+from tabcontract_base cb 
+left join sme_org sme on (case when locate(' ', cb.sales_staff) = 0 then cb.sales_staff else left(cb.sales_staff, locate(' ', cb.sales_staff)-1) end = sme.staff_no)
+left join tabActivity_of_collection ac on ac.name = (select name from tabActivity_of_collection where contract_no = cb.name order by name desc limit 1)
+where cb.debt_type != ''
+order by sme.id asc;
 
 
 
 
 
+select name, contract_no, `date`, gps_status, exceptional, collection_method, call_result, visited_result, promise_date, priority, is_order 
+from tabActivity_of_collection
+
+
+select contract_no, target_date, debt_type, collection_status from tabcontract_base
+
+
+update tabcontract_base cb
+left join tabActivity_of_collection ac2 on ac2.name = (select name from tabActivity_of_collection where contract_no = cb.name order by name desc limit 1)
+set ac2.is_order = 1
+where ac2.contract_no in (2106211,2106295,2102480,2103919,2103920,2106506,2076519,2105650,2074803,2077708,2082132,2104711,2104851,2105022,2078175,2082117,2062738,2085295,2089329,2104239,2104515,2105053,2105443,2104740,2105811,2105930,2106037,2098723,2100356,2101761,2073107,2100128,2100423,2102013,2105963,2106492,2103224,2102906,2100211,2102560,2102059,2102555,2104504,2106080,2103975,2103135,2099536,2101538,2103272,2103459,2103415,2104955,2103647,2103832,2106344,2105210,2102851,2097356,2103527,2105965,2102412,2105101
+)
 
 
 
+
+select now();
+SELECT @@global.time_zone, @@session.time_zone;
+SET time_zone = '+07:00';
+
+
+
+-- 2) insert collection order to collection and collection CC people
+insert into tabActivity_of_collection (`creation`, `contract_no`, `collection_staff`, `date`, `collection_method`, `collectioin_result`, `priority`)
+select now() `creation`, cb.contract_no, cb.collection_staff, 
+	case when cb.collection_status = 'already paid' then null else date(now()) end `date`, 
+	case when cb.collection_status = 'already paid' then '' else 'Visit / ລົງຢ້ຽມຢາມ' end `collection_method`, 
+	case when cb.collection_status = 'already paid' then 'Paid / ຈ່າຍ' else null end `collectioin_result`,
+	case when cb.collection_status = 'already paid' then ''
+		when count(ac.exceptional) >=1 then 1 -- Exceptional case
+		when ac2.gps_status = 'offline' or cb.gps_status = 'offline' then 2 -- GPS Offline
+		when count(ifnull(ac.promise_date, 1)) >= 1 then 3 -- No payment promise
+		when count(ac.promise_date) or ac2.promise_date > date(now()) then 4 -- Break payment primise
+		else 5 -- Others
+	end `priority` 
+from tabcontract_base cb left join tabActivity_of_collection ac on (ac.contract_no = cb.name)
+left join tabActivity_of_collection ac2 on ac2.name = (select name from tabActivity_of_collection where contract_no = cb.name order by name desc limit 1)
+ where cb.debt_type != '' and cb.collection_status = '0'
+group by cb.name ;
+
+
+
+select * from tabSME_BO_and_Plan bp where date_format(bp.creation, '%Y-%m-%d') = '2024-04-12' 
+
+select ac.`date`, cb.contract_no, ac.exceptional, cb.gps_status 'base_gps_status', ac.gps_status 'activity_gps_status',  ac.promise_date
+from tabcontract_base cb left join tabActivity_of_collection ac on (ac.contract_no = cb.name)
+
+
+select * from tabActivity_of_collection where creation >= date(now()) -1  and contract_no in (2100087, 2106051)  ;
+
+update tabActivity_of_collection set `date` = date(now()) where modified >= date(now())
+
+
+-- Yoshi orders to check case that have car and no car
+select rank_update, 
+	count(case when maker != '' or model != '' then 1 end) 'Have car',
+	count(case when maker is null and model is null then 1 end) 'No car'
+from tabSME_BO_and_Plan 
+-- where name <= 100
+group by rank_update
+
+
+select name, maker, model , case when maker != '' or model != '' then 'Have car' end `Car_check`, rank1 , rank_update 
+from tabSME_BO_and_Plan where rank_update = 'F';
+
+
+update tabSME_BO_and_Plan set rank1 = 'F', rank_update = 'F' where rank_update = ''
+
+
+select *
+from tabsme_Sales_partner sp
+where current_staff = '387 - LEY' and refer_type = '5way' and sp.owner_staff = sp.current_staff
+
+
+
+
+select name, creation, rank1, contract_status, disbursement_date_pay_date ,
+	timestampdiff(day, date_format(creation, '%Y-%m-%d'), disbursement_date_pay_date)
+from tabSME_BO_and_Plan bp
+where rank1 in ('S', 'A', 'B', 'C')
 
 
 
