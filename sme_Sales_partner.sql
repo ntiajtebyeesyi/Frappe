@@ -139,13 +139,18 @@ select from_unixtime(c.disbursed_datetime, '%Y-%m-%d %H:%m:%s') `creation`, null
 	upper( case when u2.staff_no is not null then concat(u2.staff_no, ' - ', u2.nickname) else concat(u.staff_no, ' - ', u.nickname) end ) `owner_staff`, 
 	'SP - ນາຍໜ້າໃນອາດີດ' `broker_type`, 
 	convert(cast(convert(concat(b.first_name , " ",b.last_name) using latin1) as binary) using utf8) `broker_name`, 
-	b.contact_no `broker_tel`, null `address_province_and_city`, null `address_village`, null `broker_workplace`, 
+	b.contact_no `broker_tel`, 
+	concat(left(pr.province_name, locate('-', pr.province_name)-2), ' - ', ci.city_name) `address_province_and_city`, 
+	convert(cast(convert(vi.village_name_lao using latin1) as binary) using utf8) `address_village`, null `broker_workplace`, 
 	convert(cast(convert(concat(bt.code , " - ",bt.type) using latin1) as binary) using utf8) `business_type`, 'Yes - ເຄີຍແນະນຳມາແລ້ວ' `ever_introduced`, c.contract_no, null `rank`, b.id `refer_id`, 'LMS_Broker' `refer_type`
 from tblcontract c left join tblprospect p on (p.id = c.prospect_id)
 left join tblbroker b on (b.id = p.broker_id)
 left join tbluser u on (u.id = p.salesperson_id)
 left join tbluser u2 on (u2.id = p.broker_acquire_salesperson_id)
 left join tblbusinesstype bt on (bt.code = b.business_type)
+left join tblprovince pr on (b.address_province = pr.id)
+left join tblcity ci on (b.address_city = ci.id)
+left join tblvillage vi on (b.address_village_id = vi.id)
 where c.status in (4,6,7) and p.broker_id <> 0
 order by c.contract_no desc;
 
