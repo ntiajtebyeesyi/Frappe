@@ -161,6 +161,32 @@ where c.status in (4,6,7) and p.broker_id <> 0
 order by c.contract_no desc;
 
 
+-- ---------------------------------- update type ----------------------------------
+select refer_type, broker_type, count(*) from tabsme_Sales_partner group by refer_type, broker_type ;
+update tabsme_Sales_partner set refer_type = '5way', broker_type = '5way - 5ສາຍພົວພັນ' where refer_type is null;
+select distinct refer_type, broker_type from tabsme_Sales_partner ;
+
+
+-- ---------------------------------- delete deplicate -----------------------------------
+delete from tabsme_Sales_partner where name in (
+
+select refer_type, broker_type, count(*) from tabsme_Sales_partner where name in (
+select `name` from ( 
+		select `name`, row_number() over (partition by `broker_tel` order by field(`refer_type`, "LMS_Broker", "tabSME_BO_and_Plan", "5way"), 
+			field(`broker_type`, "SP - ນາຍໜ້າໃນອາດີດ", "Y - ລູກຄ້າເກົ່າ ທີ່ສົນໃຈເປັນນາຍໜ້າ", "Z - ລູກຄ້າປັດຈຸບັນ ທີ່ສົນໃຈເປັນນາຍໜ້າ", "X - ລູກຄ້າໃໝ່ ທີ່ສົນໃຈເປັນນາຍໜ້າ", "5way - 5ສາຍພົວພັນ"), `name` asc) as row_numbers  
+		from tabsme_Sales_partner
+	) as t1
+where row_numbers > 1 
+) group by refer_type, broker_type ;
+
+delete from tabsme_Sales_partner where name in (
+select `name` from ( 
+		select `name`, row_number() over (partition by `broker_tel` order by field(`refer_type`, "LMS_Broker", "tabSME_BO_and_Plan", "5way"), 
+			field(`broker_type`, "SP - ນາຍໜ້າໃນອາດີດ", "Y - ລູກຄ້າເກົ່າ ທີ່ສົນໃຈເປັນນາຍໜ້າ", "Z - ລູກຄ້າປັດຈຸບັນ ທີ່ສົນໃຈເປັນນາຍໜ້າ", "X - ລູກຄ້າໃໝ່ ທີ່ສົນໃຈເປັນນາຍໜ້າ", "5way - 5ສາຍພົວພັນ"), `name` asc) as row_numbers  
+		from tabsme_Sales_partner
+	) as t1
+where row_numbers > 1 
+);
 
 
 
