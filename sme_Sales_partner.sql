@@ -139,7 +139,10 @@ select from_unixtime(c.disbursed_datetime, '%Y-%m-%d %H:%m:%s') `creation`, null
 	upper( case when u2.staff_no is not null then concat(u2.staff_no, ' - ', u2.nickname) else concat(u.staff_no, ' - ', u.nickname) end ) `owner_staff`, 
 	'SP - ນາຍໜ້າໃນອາດີດ' `broker_type`, 
 	convert(cast(convert(concat(b.first_name , " ",b.last_name) using latin1) as binary) using utf8) `broker_name`, 
-	b.contact_no `broker_tel`, 
+	case when left (right (REPLACE ( b.contact_no, ' ', '') ,8),1) = '0' then CONCAT('903',right (REPLACE ( b.contact_no, ' ', '') ,8))
+	    when length (REPLACE ( b.contact_no, ' ', '')) = 7 then CONCAT('9030',REPLACE ( b.contact_no, ' ', ''))
+	    else CONCAT('9020', right(REPLACE ( b.contact_no, ' ', '') , 8))
+	end `broker_tel`,
 	concat(left(pr.province_name, locate('-', pr.province_name)-2), ' - ', ci.city_name) `address_province_and_city`, 
 	convert(cast(convert(vi.village_name_lao using latin1) as binary) using utf8) `address_village`, null `broker_workplace`, 
 	convert(cast(convert(concat(bt.code , " - ",bt.type) using latin1) as binary) using utf8) `business_type`, 'Yes - ເຄີຍແນະນຳມາແລ້ວ' `ever_introduced`, c.contract_no, null `rank`, b.id `refer_id`, 'LMS_Broker' `refer_type`
