@@ -136,7 +136,9 @@ order by sme.id ;
 
 -- export from LMS
 select from_unixtime(c.disbursed_datetime, '%Y-%m-%d %H:%m:%s') `creation`, null `modified`, 'Administrator' `owner`, null `current_staff`, 
-	upper( case when u2.staff_no is not null then concat(u2.staff_no, ' - ', u2.nickname) else concat(u.staff_no, ' - ', u.nickname) end ) `owner_staff`, 
+	upper(case when u2.nickname = 'Mee' then concat(u.staff_no, ' - ', u.nickname) 
+		when u2.staff_no is not null then concat(u2.staff_no, ' - ', u2.nickname) else concat(u.staff_no, ' - ', u.nickname)
+	end ) `owner_staff`, 
 	'SP - ນາຍໜ້າໃນອາດີດ' `broker_type`, 
 	convert(cast(convert(concat(b.first_name , " ",b.last_name) using latin1) as binary) using utf8) `broker_name`, 
 	case when left (right (REPLACE ( b.contact_no, ' ', '') ,8),1) = '0' then CONCAT('903',right (REPLACE ( b.contact_no, ' ', '') ,8))
@@ -145,7 +147,8 @@ select from_unixtime(c.disbursed_datetime, '%Y-%m-%d %H:%m:%s') `creation`, null
 	end `broker_tel`,
 	concat(left(pr.province_name, locate('-', pr.province_name)-2), ' - ', ci.city_name) `address_province_and_city`, 
 	convert(cast(convert(vi.village_name_lao using latin1) as binary) using utf8) `address_village`, null `broker_workplace`, 
-	convert(cast(convert(concat(bt.code , " - ",bt.type) using latin1) as binary) using utf8) `business_type`, 'Yes - ເຄີຍແນະນຳມາແລ້ວ' `ever_introduced`, c.contract_no, null `rank`, b.id `refer_id`, 'LMS_Broker' `refer_type`
+	convert(cast(convert(concat(bt.code , " - ",bt.type) using latin1) as binary) using utf8) `business_type`, 'Yes - ເຄີຍແນະນຳມາແລ້ວ' `ever_introduced`, c.contract_no, null `rank`, b.id `refer_id`, 'LMS_Broker' `refer_type`,
+	case when u2.nickname = 'Mee' then u.staff_no when u2.staff_no is not null then u2.staff_no else u.staff_no end `staff_no`
 from tblcontract c left join tblprospect p on (p.id = c.prospect_id)
 left join tblbroker b on (b.id = p.broker_id)
 left join tbluser u on (u.id = p.salesperson_id)
