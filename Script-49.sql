@@ -31,7 +31,7 @@ select * from sme_org so ;
 
 
 
-
+select * from tabsme_Sales_partner where owner_staff is null;
 
 
 -- check and update the data for each rank
@@ -69,7 +69,7 @@ update tabSME_BO_and_Plan
  
 update tabsme_Sales_partner
 	set broker_tel = 
-	case when broker_tel = '' then ''
+	  case when broker_tel = '' then ''
 		when (length (regexp_replace(broker_tel , '[^[:digit:]]', '')) = 11 and left (regexp_replace(broker_tel , '[^[:digit:]]', ''),3) = '020')
 			or (length (regexp_replace(broker_tel , '[^[:digit:]]', '')) = 10 and left (regexp_replace(broker_tel , '[^[:digit:]]', ''),2) = '20')
 			or (length (regexp_replace(broker_tel , '[^[:digit:]]', '')) = 8 and left (regexp_replace(broker_tel , '[^[:digit:]]', ''),1) in ('2','5','7','8','9'))
@@ -89,57 +89,13 @@ update tabsme_Sales_partner
 
 
 
+
 -- update backup data 
 insert into tabSME_BO_and_Plan select * from tabSME_BO_and_Plan_bk where name not in (select name from tabSME_BO_and_Plan);
 replace into tabSME_BO_and_Plan_bk select * from tabSME_BO_and_Plan; -- Updated Rows	495867
-replace into tabsme_Sales_partner_bk select * from tabsme_Sales_partner; -- Updated Rows	151647
+-- replace into tabsme_Sales_partner_bk select * from tabsme_Sales_partner; -- Updated Rows	151647
 
 
-
-select COUNT(*) 
-from tabsme_Sales_partner sp left join sme_org sme on (case when locate(' ', sp.current_staff) = 0 then sp.current_staff else left(sp.current_staff, locate(' ', sp.current_staff)-1) end = sme.staff_no)
-inner join temp_sme_pbx_SP ts on (ts.id = sp.name)
-where sp.refer_type = 'tabSME_BO_and_Plan'
-
-select * from tabSME_BO_and_Plan tsbap where visit_date > date(now()) and visit_or_not = 'Yes - ຢ້ຽມຢາມແລ້ວ';
-
-select bp.staff_no , bp.callcenter_of_sales , bp.double_count , bp.name ,
-	case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end `Staff NO`,
-	case when locate(' ', bp.callcenter_of_sales) = 0 then bp.callcenter_of_sales else left(bp.callcenter_of_sales, locate(' ', bp.callcenter_of_sales)-1) end `CC No`,
-	case when locate(' ', bp.double_count) = 0 then bp.double_count else left(bp.double_count, locate(' ', bp.double_count)-1) end `Double count NO`
-from tabSME_BO_and_Plan bp where creation >= date(now())
-
-
-
-
--- check and update wrong amount 
-select * from tabSME_BO_and_Plan where usd_loan_amount >= 100000;
-
-select case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.dept else smec.dept end `DEPT`, 
-	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.sec_branch else smec.sec_branch end `SECT`, 
-	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit_no else smec.unit_no end `Unit_no`, 
-	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.unit else smec.unit end `Unit`, 
-	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then bp.staff_no else regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') end `Staff No`, 
-	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then sme.staff_name else smec.staff_name end `Staff Name`, 
-	`type`, bp.usd_loan_amount, 
-	bp.normal_bullet , bp.contract_no , bp.case_no , bp.customer_name, date_format(bp.creation, '%Y-%m-%d') 'Date created', bp.rank_update,
-	concat('http://13.250.153.252:8000/app/sme_bo_and_plan/', name) `Edit`
-from tabSME_BO_and_Plan bp left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
-left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]]', '') = smec.staff_no)
-where bp.usd_loan_amount >= 100000 order by sme.id desc;
-
-
-
-select * from tabUser where name in ('lalco1@lalco.la', 'lalco2@lalco.la', 'champagne3807@lalco.la', 'an3824@lalco.la', 'sing3839@lalco.la', 'phone3336@lalco.la')
-order by modified 
-
-select name, creation , modified , modified_by , owner , email , first_name , last_name , username, time_zone,`language`, gender , birth_date , phone , mobile_no, 
-	 desk_theme, last_known_versions, onboarding_status 
-from tabUser where name in ('saeng3931@lalco.la')
-order by field(name, 'saeng3931@lalco.la') 
-
-
-update tabSME_BO_and_Plan set is_sales_partner = 'No-ບໍ່ສົນໃຈ' where is_sales_partner is null
 
 
 -- BO https://docs.google.com/spreadsheets/d/1rKhGY4JN5N0EZs8WiUC8dVxFAiwGrxcMp8-K_Scwlg4/edit#gid=1793628529&fvid=551853106
@@ -158,14 +114,18 @@ from tabSME_BO_and_Plan bp left join sme_org sme on (case when locate(' ', bp.st
 -- order by field(bp.name, select id from SME_BO_and_Plan_report);
 left join SME_BO_and_Plan_report bpr on (bpr.id = bp.name)
 where ((bp.rank_update in ('S','A','B','C') or bp.list_type is not null )
-	and case when bp.contract_status = 'Contracted' and bp.disbursement_date_pay_date < '2023-12-06' then 0 else 1 end != 0 -- if contracted before '2023-09-29' then not need
-	and bp.disbursement_date_pay_date between date(now()) and '2024-05-31' -- and date_format(bp.modified, '%Y-%m-%d') >= date(now())
+	and case when bp.contract_status = 'Contracted' and bp.disbursement_date_pay_date < '2024-06-01' then 0 else 1 end != 0 -- if contracted before '2023-09-29' then not need
+	and bp.disbursement_date_pay_date between date(now()) and '2024-07-31' -- and date_format(bp.modified, '%Y-%m-%d') >= date(now())
 	and bp.ringi_status != 'Rejected' -- and bp.contract_status != 'Cancelled'
 	) or bp.name in (select id from SME_BO_and_Plan_report)
 order by sme.id ;
 
 select * from SME_BO_and_Plan_report bpr ;
 
+-- delete in the last month sales plan but can't execute
+-- delete from SME_BO_and_Plan_report where now_result in ('Contracted', 'Cancelled') ;
+-- delete from SME_BO_and_Plan_report where disbursement_date_pay_date < '2024-06-01' or disbursement_date_pay_date is null;
+-- delete from SME_BO_and_Plan_report where id = 638551;
 
 select bpr.* , case when bp.modified >= date(now()) then 'called' else 0 end `is_call_today`, sme.id 
 from SME_BO_and_Plan_report bpr left join tabSME_BO_and_Plan bp on (bpr.id = bp.name)
@@ -174,19 +134,34 @@ left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_n
 order by sme.id asc ;
 
 
+-- for Fong
+select bpr.date_report, sme.`g-dept`, sme.dept, sme.sec_branch , sme.unit_no, sme.unit, bpr.staff_no , sme.staff_name, bpr.`case`, bpr.`type` , bpr.usd_loan_amount, bpr.case_no, bpr.contract_no, bp.customer_name, bp.customer_tel, bpr.rank_update, bpr.now_result ,
+	bpr.disbursement_date_pay_date, bpr.which , bpr.id, bpr.comments 
+from SME_BO_and_Plan_report bpr left join tabSME_BO_and_Plan bp on (bpr.id = bp.name)
+left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
+-- where (bpr.now_result not in ('Contracted', 'Cancelled') and bpr.date_report < '2024-04-01') or bpr.date_report >= '2024-04-01'
+ where bpr.disbursement_date_pay_date between '2024-06-10' and '2024-07-31' and bpr.usd_loan_amount >= 10000
+-- where bp.name in ()
+order by sme.id asc ;
+
+
 reset query cache;
 flush query cache;
 show processlist;
-kill connection 5833331;
+kill connection 70091;
+kill connection 70121;
+kill connection 70123;
+
 
 CREATE INDEX tabSME_BO_and_Plan_rank1_IDX USING BTREE ON tabSME_BO_and_Plan (rank1);
 
-
+select * from tabsme_Employees where staff_no = 4274
 
 -- xyz to import to tabsme_Sales_partner
 insert into tabsme_Sales_partner (`current_staff`, `owner_staff`, `broker_type`, `broker_name`, `broker_tel`, `address_province_and_city`, `address_village`, `business_type`,
 	`year`, `refer_id`, `refer_type`, `creation`, `modified`, `owner`)
-select bp.staff_no `current_staff`, bp.own_salesperson `owner_staff`, bp.is_sales_partner `broker_type`, bp.customer_name `broker_name`, bp.customer_tel `broker_tel`,
+;select bp.staff_no `current_staff`, case when bp.callcenter_of_sales is not null then bp.callcenter_of_sales else bp.staff_no end `current_staff2` , 
+	bp.own_salesperson `owner_staff`, bp.is_sales_partner `broker_type`, bp.customer_name `broker_name`, bp.customer_tel `broker_tel`,
 	bp.address_province_and_city, bp.address_village, bp.business_type, bp.`year`, bp.name `refer_id`, 'tabSME_BO_and_Plan' `refer_type`,
 	bp.creation, bp.modified, bp.owner
 from tabSME_BO_and_Plan bp left join sme_org sme on (bp.staff_no = sme.staff_no)
@@ -196,7 +171,7 @@ where bp.is_sales_partner in ('X - ລູກຄ້າໃໝ່ ທີ່ສົ�
 
 -- to make your form can add new record after you import data from tabSME_BO_and_Plan
 select max(name)+1 `next_not_cached_value` from tabsme_Sales_partner;
-alter table tabsme_Sales_partner auto_increment= 198311 ; -- next id
+alter table tabsme_Sales_partner auto_increment= 451388 ; -- next id
 insert into sme_sales_partner_id_seq select (select max(name)+1 `next_not_cached_value` from tabsme_Sales_partner), minimum_value, maximum_value, start_value, increment, cache_size, cycle_option, cycle_count 
 from sme_bo_and_plan_id_seq;
 
@@ -223,6 +198,44 @@ from tabsme_Sales_partner sp left join sme_org sme on (case when locate(' ', sp.
 left join temp_sme_pbx_SP ts on (ts.id = sp.name)
 where sp.refer_type = 'tabSME_BO_and_Plan' -- and sme.`unit_no` is not null -- if resigned staff no need
 order by sme.id ;
+
+
+
+-- ---------------------------------- update sales partner type ----------------------------------
+select refer_type, broker_type, count(*) from tabsme_Sales_partner group by refer_type, broker_type ;
+update tabsme_Sales_partner set refer_type = '5way', broker_type = '5way - 5ສາຍພົວພັນ' where refer_type is null;
+select distinct refer_type, broker_type from tabsme_Sales_partner ;
+
+select * from tabsme_Sales_partner where send_wa = '' or send_wa is null;
+update tabsme_Sales_partner set send_wa = 'No-ສົ່ງບໍໄດ້' where send_wa = '' or send_wa is null;
+update tabsme_Sales_partner set wa_date = date_format(modified, '%Y-%m-%d') where send_wa != '' and modified >= '2024-05-01' ;
+
+select modified, date_format(modified, '%Y-%m-%d'), wa_date  from tabsme_Sales_partner where send_wa != '' and wa_date >= '2024-06-01'
+
+
+
+-- ---------------------------------- delete deplicate -----------------------------------
+delete from tabsme_Sales_partner where name in (
+
+select refer_type, broker_type, count(*) from tabsme_Sales_partner where name in (
+select `name` from ( 
+		select `name`, row_number() over (partition by `broker_tel` order by field(`refer_type`, "LMS_Broker", "tabSME_BO_and_Plan", "5way"), 
+			field(`broker_type`, "SP - ນາຍໜ້າໃນອາດີດ", "Y - ລູກຄ້າເກົ່າ ທີ່ສົນໃຈເປັນນາຍໜ້າ", "Z - ລູກຄ້າປັດຈຸບັນ ທີ່ສົນໃຈເປັນນາຍໜ້າ", "X - ລູກຄ້າໃໝ່ ທີ່ສົນໃຈເປັນນາຍໜ້າ", "5way - 5ສາຍພົວພັນ"), `name` asc) as row_numbers  
+		from tabsme_Sales_partner
+	) as t1
+where row_numbers > 1 
+) group by refer_type, broker_type ;
+
+delete from tabsme_Sales_partner where name in (
+select `name` from ( 
+		select `name`, row_number() over (partition by `broker_tel` order by field(`refer_type`, "LMS_Broker", "tabSME_BO_and_Plan", "5way"), 
+			field(`broker_type`, "SP - ນາຍໜ້າໃນອາດີດ", "Y - ລູກຄ້າເກົ່າ ທີ່ສົນໃຈເປັນນາຍໜ້າ", "Z - ລູກຄ້າປັດຈຸບັນ ທີ່ສົນໃຈເປັນນາຍໜ້າ", "X - ລູກຄ້າໃໝ່ ທີ່ສົນໃຈເປັນນາຍໜ້າ", "5way - 5ສາຍພົວພັນ"), `name` asc) as row_numbers  
+		from tabsme_Sales_partner
+	) as t1
+where row_numbers > 1 
+);
+
+
 
 -- --------------------------------------------------------------------------------
 select * from tabSME_BO_and_Plan tsbap order by name desc limit 10 -- name before import 219602
@@ -332,6 +345,43 @@ where ( (bp.rank1 in ('S', 'A', 'B', 'C') and date_format(bp.creation, '%Y-%m-%d
 	and bp.contract_status not in ('Contracted', 'Cancelled');
 
 
+
+-- __________________________________________ Prepare new Month __________________________________________
+-- check and delete the customer who doesnn't like LALCO
+select * from tabSME_BO_and_Plan where reason_of_credit = '18 ບໍ່ມັກ LALCO';
+delete from tabSME_BO_and_Plan where reason_of_credit = '18 ບໍ່ມັກ LALCO';
+
+
+-- SABC update the list for next month
+delete from temp_sme_pbx_BO where type in ('S', 'A', 'B', 'C');
+
+replace into temp_sme_pbx_BO
+select bp.name `id`, bp.customer_tel, null `pbx_status`, null `date`, bp.staff_no `current_staff`, 
+	case when bp.rank_update in ('S', 'A', 'B', 'C') then bp.rank_update else bp.rank1 end `type`, 
+	case when timestampdiff(month, bp.creation, date(now())) > 36 then 36 else timestampdiff(month, bp.creation, date(now())) end `month_type`
+	-- case when bp.contract_status = 'Contracted' then 'Contracted' when bp.contract_status = 'Cancelled' then 'Cancelled' else bp.rank_update end `Now Result`
+from tabSME_BO_and_Plan bp 
+where ( (bp.rank1 in ('S', 'A', 'B', 'C') and bp.rank_update not in ('FFF') )
+	or bp.rank_update in ('S', 'A', 'B', 'C') )
+	and bp.contract_status not in ('Contracted');
+
+
+-- F update the list for next month
+delete from temp_sme_pbx_BO where type in ('F');
+
+insert into temp_sme_pbx_BO
+select bp.name `id`, bp.customer_tel, null `pbx_status`, null `date`, bp.staff_no `current_staff`, 
+	case when bp.rank_update in ('S', 'A', 'B', 'C') then bp.rank_update else 'F' end `type`, 
+	case when timestampdiff(month, bp.creation, date(now())) > 36 then 36 else timestampdiff(month, bp.creation, date(now())) end `month_type`
+	-- case when bp.contract_status = 'Contracted' then 'Contracted' when bp.contract_status = 'Cancelled' then 'Cancelled' else bp.rank_update end `Now Result`
+from tabSME_BO_and_Plan bp 
+where ( (bp.rank1 in ('F') and bp.rank_update not in ('FFF') )
+	or bp.rank_update in ('F') )
+	and bp.name not in (select id from temp_sme_pbx_BO where type in ('S', 'A', 'B', 'C') )
+	and bp.contract_status not in ('Contracted');
+
+
+
 -- SABC update
 select bp.name `id`, bp.customer_tel, null `pbx_status`, null `date`, 
 	case when bp.callcenter_of_sales is null or bp.callcenter_of_sales = '' then bp.staff_no else bp.callcenter_of_sales end `current_staff`,
@@ -387,14 +437,16 @@ where bp.rank1 in ('S', 'A', 'B', 'C', 'F') ;
 
 
 
-
-
-
--- Email management  https://docs.google.com/spreadsheets/d/1y_aoS_10n_FAqgWbbaURD9D79WN--wgR5Ih3QwLWTag/edit#gid=659979462
-select name, username, first_name, last_name , gender, birth_date, phone , mobile_no, time_zone from tabUser 
--- where name = 'sayphone.s@lalco.la'
+-- Users Email management  https://docs.google.com/spreadsheets/d/1y_aoS_10n_FAqgWbbaURD9D79WN--wgR5Ih3QwLWTag/edit#gid=659979462
+	select name, username, first_name, last_name , gender, birth_date, phone , mobile_no, enabled, time_zone from tabUser order by creation desc;
+-- where name like 'toukta%'
 order by creation desc;
 
+update tabUser set time_zone = 'Asia/Bangkok' where name != 'maheshprabuddika@gmail.com';
+update tabUser set enabled = 0 where username in ('134', '210', '270', '374', '412', '471', '773', '791', '943', '1001', '1248', '1299', '1578', '1625', '1833', '1907', '2001', '2130', '2201', '2234', '2238', '2333', '2616', '2846', '3029', '3062', '3113', '3123', '3161', '3194', '3297', '3336', '3360', '3469', '3522', '3527', '3528', '3529', '3571', '3594', '3635', '3638', '3641', '3661', '3670', '3677', '3680', '3692', '3696', '3698', '3710', '3714', '3723', '3728', '3729', '3730', '3740', '3742', '3743', '3744', '3746', '3748', '3752', '3760', '3765', '3766', '3769', '3774', '3784', '3790', '3795', '3798', '3799', '3803', '3807', '3812', '3817', '3818', '3824', '3831', '3832', '3833', '3835', '3836', '3837', '3838', '3839', '3841', '3842', '3843', '3844', '3848', '3850', '3852', '3853', '3854', '3857', '3858', '3859', '3861', '3862', '3864', '3868', '3870', '3874', '3876', '3877', '3878', '3880', '3881', '3883', '3885', '3886', '3887', '3889', '3890', '3892', '3893', '3895', '3897', '3898', '3899', '3901', '3902', '3903', '3910', '3911', '3912', '3915', '3922', '3924', '3926', '3930', '3931', '3933', '3935', '3959', '3980');
+
+select * from tabUser where name = 'test1@lalco.la';
+select * from user
 
 -- export HR system
 select ha.name, date_format(ha.creation, '%Y-%m-%d') `date created`, date_format(ha.modified, '%Y-%m-%d') `date updated`,
@@ -475,6 +527,7 @@ left join tabActivity_of_collection ac2 on ac2.name = (select name from tabActiv
 group by cb.name ;
 
 
+delete from tabSME_BO_and_Plan_bk where name = 631221
 
 select * from tabSME_BO_and_Plan bp where date_format(bp.creation, '%Y-%m-%d') = '2024-04-12' 
 
@@ -517,7 +570,50 @@ where rank1 in ('S', 'A', 'B', 'C')
 
 
 
+select * from tabsme_Employees ;
 
+update tabsme_Employees
+	set main_contact = 
+	  case when main_contact = '' then ''
+		when (length (regexp_replace(main_contact , '[^[:digit:]]', '')) = 11 and left (regexp_replace(main_contact , '[^[:digit:]]', ''),3) = '020')
+			or (length (regexp_replace(main_contact , '[^[:digit:]]', '')) = 10 and left (regexp_replace(main_contact , '[^[:digit:]]', ''),2) = '20')
+			or (length (regexp_replace(main_contact , '[^[:digit:]]', '')) = 8 and left (regexp_replace(main_contact , '[^[:digit:]]', ''),1) in ('2','5','7','8','9'))
+		then concat('20',right(regexp_replace(main_contact , '[^[:digit:]]', ''),8)) -- for 020
+		when (length (regexp_replace(main_contact , '[^[:digit:]]', '')) = 10 and left (regexp_replace(main_contact , '[^[:digit:]]', ''),3) = '030')
+			or (length (regexp_replace(main_contact , '[^[:digit:]]', '')) = 9 and left (regexp_replace(main_contact , '[^[:digit:]]', ''),2) = '30')
+			or (length (regexp_replace(main_contact , '[^[:digit:]]', '')) = 7 and left (regexp_replace(main_contact , '[^[:digit:]]', ''),1) in ('2','4','5','7','9'))
+		then concat('30',right(regexp_replace(main_contact , '[^[:digit:]]', ''),7)) -- for 030
+		when left (right (regexp_replace(main_contact , '[^[:digit:]]', ''),8),1) in ('0','1','') then concat('30',right(regexp_replace(main_contact , '[^[:digit:]]', ''),7))
+		when left (right (regexp_replace(main_contact , '[^[:digit:]]', ''),8),1) in ('2','5','7','8','9')
+		then concat('20',right(regexp_replace(main_contact , '[^[:digit:]]', ''),8))
+		else concat('20',right(regexp_replace(main_contact , '[^[:digit:]]', ''),8))
+	end
+;
+
+
+select staff_no, staff_name, main_contact 
+from tabsme_Employees;
+
+
+select * from tabsme_Sales_partner tsp 
+
+select creation, modified, 'Administrator' owner, current_staff, owner_staff, broker_type, broker_name, broker_tel, address_province_and_city, address_village,
+	broker_workplace, business_type, ever_introduced, contract_no, `rank`, refer_id, refer_type
+from tabsme_Sales_partner tsp 
+where refer_type = 'LMS_Broker';
+
+
+select * from tabsme_Sales_partner tsp 
+-- where left(broker_tel, 4) = '9030' -- and send_wa is null
+where broker_tel = '' and send_wa is null
+
+
+update tabsme_Sales_partner set send_wa = 'No-ສົ່ງບໍໄດ້'
+-- where left(broker_tel, 4) = '9030' and send_wa is null
+where broker_tel = ''
+
+
+select name, username, first_name, last_name , gender, birth_date, phone , mobile_no, time_zone from tabUser order by creation desc;
 
 
 
