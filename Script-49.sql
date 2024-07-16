@@ -110,25 +110,28 @@ select case when bpr.date_report is null then date(now()) else bpr.date_report e
 	end `now_result`, 
 	bp.disbursement_date_pay_date , 
 	case when bpr.id is null and (bp.disbursement_date_pay_date is null or bp.disbursement_date_pay_date < date(now())) then null 
+		when bp.disbursement_date_pay_date >= date(Now()) then 'ແຜນເພີ່ມ' when bpr.which is null then null
 		when bpr.id is not null then 'ແຜນເພີ່ມ' else bpr.which
 	end `which`, 
 	bp.name `id`, case when bp.credit_remark is not null then bp.credit_remark else bp.contract_comment end `comments`
 from tabSME_BO_and_Plan bp left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
 left join SME_BO_and_Plan_report bpr on (bpr.id = bp.name)
 where ((bp.rank_update in ('S','A','B','C') /*or bp.list_type is not null*/ )
-	and case when bp.contract_status = 'Contracted' and bp.disbursement_date_pay_date < '2024-06-01' then 0 else 1 end != 0 -- if contracted before '2023-09-29' then not need
+	and case when bp.contract_status = 'Contracted' and bp.disbursement_date_pay_date < '2024-07-01' then 0 else 1 end != 0 -- if contracted before '2023-09-29' then not need
 	-- and bp.disbursement_date_pay_date between date(now()) and '2024-07-31' -- and date_format(bp.modified, '%Y-%m-%d') >= date(now())
 	-- and bp.ringi_status != 'Rejected' -- and bp.contract_status != 'Cancelled'
 	) or bp.name in (select id from SME_BO_and_Plan_report)
 order by sme.id ;
 
-select * from SME_BO_and_Plan_report bpr ;
+select * from SME_BO_and_Plan_report bpr where date_report = '2024-06-21';
 
--- delete in the last month sales plan but can't execute
+
+-- _________________ delete in the last month sales plan but can't execute _________________
 -- delete from SME_BO_and_Plan_report where now_result in ('Contracted', 'Cancelled') ;
--- delete from SME_BO_and_Plan_report where disbursement_date_pay_date < '2024-06-01' or disbursement_date_pay_date is null;
+-- delete from SME_BO_and_Plan_report where disbursement_date_pay_date < '2024-07-01' or disbursement_date_pay_date is null;
 -- delete from SME_BO_and_Plan_report where id = 638551;
 
+update SME_BO_and_Plan_report set which = null where now_result != 'Contracted' and disbursement_date_pay_date is null
 
 select bpr.* , case when bp.modified >= date(now()) then 'called' else 0 end `is_call_today`, sme.id 
 from SME_BO_and_Plan_report bpr left join tabSME_BO_and_Plan bp on (bpr.id = bp.name)
@@ -136,6 +139,7 @@ left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_n
 where bpr.which = 'ແຜນເພີ່ມ' and bpr.staff_no is not null -- and bpr.now_result = 'Contracted' and bpr.disbursement_date_pay_date is null
 order by sme.id asc ;
 
+select * from tabSME_BO_and_Plan where name in (select id from SME_BO_and_Plan_report where date_report = '2024-06-21')
 
 -- for Fong
 select bpr.date_report, sme.`g-dept`, sme.dept, sme.sec_branch , sme.unit_no, sme.unit, bpr.staff_no , sme.staff_name, bpr.`case`, bpr.`type` , bpr.usd_loan_amount, bpr.case_no, bpr.contract_no, bp.customer_name, bp.customer_tel, bpr.rank_update, bpr.now_result ,
@@ -148,6 +152,28 @@ left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_n
 order by sme.id asc ;
 
 
+select case when bpr.date_report is null then date(now()) else bpr.date_report end `date_report`, sme.staff_no, sme.staff_name, sme.sec_branch, 1 `case`, case when bp.`type` = 'New' then 'NEW' when bp.`type` = 'Dor' then 'DOR' when bp.`type` = 'Inc' then 'INC' end `type`,
+	bp.usd_loan_amount, bp.case_no, bp.contract_no, -- bp.customer_name, 
+	concat('=HYPERLINK("http://13.250.153.252:8000/app/sme_bo_and_plan/"&',bp.name,',', '"' , bp.customer_name, '"',')' ) `customer_name`,
+	bp.rank_update,
+	case when bp.contract_status = 'Contracted' then 'Contracted' when bp.contract_status = 'Cancelled' then 'Cancelled' 
+		when bp.ringi_status = 'Approved' then 'APPROVED' when bp.ringi_status = 'Pending approval' then 'PENDING' 
+		when bp.ringi_status = 'Draft' then 'DRAFT' when bp.ringi_status = 'Not Ringi' then 'No Ringi' 
+	end `now_result`, 
+	bp.disbursement_date_pay_date , 
+	case when bpr.id is null and (bp.disbursement_date_pay_date is null or bp.disbursement_date_pay_date < date(now())) then null 
+		when bp.disbursement_date_pay_date >= date(Now()) then 'ແຜນເພີ່ມ' when bpr.which is null then null
+		when bpr.id is not null then 'ແຜນເພີ່ມ' else bpr.which
+	end `which`, 
+	bp.name `id`, case when bp.credit_remark is not null then bp.credit_remark else bp.contract_comment end `comments`,
+	bp.credit , bp.modified 
+from tabSME_BO_and_Plan bp left join sme_org sme on (case when locate(' ', bp.staff_no) = 0 then bp.staff_no else left(bp.staff_no, locate(' ', bp.staff_no)-1) end = sme.staff_no)
+left join SME_BO_and_Plan_report bpr on (bpr.id = bp.name)
+where bp.name in (665905,662605,660232,208570,666056,665983,665290,664082,662719,665884,665405,664818,664339,657189,656494,659531,665480,664765,661228,666060,665436,660531,661231,659691,657744,661782,651284,651138,645714,664800,662751,632156,662313,660710,665019,661100,666049,665903,664029,662860,662380,665899,664549,663619,665341,664573,656265,666043,666010,665433,663032,665227,665869,664736,662759,661646,612164,665904,663416,662815,665327,663420,659063,665555,655598,655895,662919,661392,664120,665786,663524,665410,660166,664855,658143,664715,656591,664709,665896,664109,663667,661851,657409,666047,665991,663920,655302,666005,665910,662277,660525,657684,666062,664153,660963,660199,662617,660178,662207,657729,661945,661353,660747,663904,666051,665445,664238,661233,664012,664688,665907,641846,663970,666000,665994,662339,660098,656579,655995,657338,663693,662374,662370,657750,666023,664853,662668,664757,661226,666044,664210,666006,654651,665879,665345,664886,662515,661061,665557,665406,664045,663487,653405,666053,665324,665388,663586,651912,664303,663647,663321,661787,658281,665715,664948,657219,663892,661580,665051,664100,663037,666095,665429,664103,660449,657083,660692,665876,666007,662729,664251,652025,665882,665874,665401,665384,661625,665870,665843,664250,665829,663690,665350,666016,665999,659707,648068,665351,662233,584252,664918,661869,661564,664028,660970,663643,663511,660206,665811,662681,664946,663030,662190,639455,664064,663496,659422,665872,654141,664579,624539,663484,665308,663477,665291,655218,664827,664148,665672,664044,665619,665868,664265,653011,665492,664875,661777,666065,659828,665706,654698,665688,653133,656820,655335,665758,665136,663576,665782,662074,665430,661559,664920,664164,663605,662915,664793,664296,661820,648619,666050,642494,665815,663898,662161,664152,665909,664866,665249,664221,663509,661579,664149,663314,661146,99787,660533,660147,665219,664601,663881,662928,661601,662930,660096,664127,663293,648157,666035,665339,664787,664781,664774,658209,657656,663290,659687,658125,654374,665895,664217,657767,665886,656999,663691,665446,656460,662737,665311,655913,661929,664718,661223,664691,659714,660620,663000,661765,660118,649786,665900,649014,664334,647790,663632,661767,660373,653909,646911,665455,661950,659806,655275,650359,665254,664857,664279,661481,661134,654660,664878,662996,662016,665989,662917,665736,665407,663467,661852,655254,665258,662288,655318,654610,642991,657581,665898,663694,661797,641844,662202,660998,663575,662282,662173,660995,665995,665875,665877,661960,663889,56709,666046,662245,659703,657197,666032,664944,664346,650643,657068,665992,657182,656057,653874,653197,652493,656646,657728,665356,655440,664352,653924,663389,661666,661234,663043,664344,664448,664363,662910,666045,661191,665906,665360,664797,660064,664342,605771,663622,662904,662298,665894,661622,665500,662347,661519,656072,662732,664340,662991,662137,660709,665403,660002,664956,665792,666057,665880,664310,662866,659926,659940,657773,664316,662865,662856,660004,665465,664320)
+	and bp.credit = '4145 - FONG' and bp.modified >= '2024-07-01';
+
+
+
 reset query cache;
 flush query cache;
 show processlist;
@@ -158,7 +184,7 @@ kill connection 70123;
 
 CREATE INDEX tabSME_BO_and_Plan_rank1_IDX USING BTREE ON tabSME_BO_and_Plan (rank1);
 
-select * from tabsme_Employees where staff_no = 4274
+select * from tabSME_BO_and_Plan where callcenter_of_sales like '4297%' and creation >= '2024-07-01'
 
 -- xyz to import to tabsme_Sales_partner
 insert into tabsme_Sales_partner (`current_staff`, `owner_staff`, `broker_type`, `broker_name`, `broker_tel`, `address_province_and_city`, `address_village`, `business_type`,
@@ -211,7 +237,7 @@ select distinct refer_type, broker_type from tabsme_Sales_partner ;
 
 select * from tabsme_Sales_partner where send_wa = '' or send_wa is null;
 update tabsme_Sales_partner set send_wa = 'No-ສົ່ງບໍໄດ້' where send_wa = '' or send_wa is null;
-update tabsme_Sales_partner set wa_date = date_format(modified, '%Y-%m-%d') where send_wa != '' and modified >= '2024-05-01' ;
+update tabsme_Sales_partner set wa_date = date_format(modified, '%Y-%m-%d') where send_wa != '' and modified >= '2024-07-01' ;
 
 select modified, date_format(modified, '%Y-%m-%d'), wa_date  from tabsme_Sales_partner where send_wa != '' and wa_date >= '2024-06-01'
 
@@ -439,13 +465,17 @@ left join sme_org smec on (regexp_replace(bp.callcenter_of_sales  , '[^[:digit:]
 where bp.rank1 in ('S', 'A', 'B', 'C', 'F') ;
 
 
+select rank_update, COUNT(*) 
+from tabSME_BO_and_Plan bp 
+group by rank_update;
+
 
 -- Users Email management  https://docs.google.com/spreadsheets/d/1y_aoS_10n_FAqgWbbaURD9D79WN--wgR5Ih3QwLWTag/edit#gid=659979462
 select name, username, first_name, last_name , gender, birth_date, phone , mobile_no, enabled, time_zone from tabUser order by creation desc;
 
 
 update tabUser set time_zone = 'Asia/Bangkok' where name != 'maheshprabuddika@gmail.com';
-update tabUser set enabled = 0 where username in ('3605', '3751', '3771', '3819', '3894', '3909', '3937', '3942', '3985', '4237');
+update tabUser set enabled = 0 where username in ('1186', '3851');
 
 select * from tabUser where name = 'test1@lalco.la';
 select * from user
@@ -615,7 +645,17 @@ update tabsme_Sales_partner set send_wa = 'No-ສົ່ງບໍໄດ້'
 where broker_tel = ''
 
 
-select name, username, first_name, last_name , gender, birth_date, phone , mobile_no, time_zone from tabUser order by creation desc;
+select refer_id, broker_type, business_type, refer_type 
+from tabsme_Sales_partner tsp where refer_type = 'LMS_Broker'
+
+
+
+
+select 
+from tabSME_BO_and_Plan tsbap where staff_no = '4008 - PHOUVIENG' and creation >= '2024-07-12'
+
+
+
 
 
 
