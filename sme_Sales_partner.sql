@@ -197,4 +197,34 @@ where sp.refer_type = 'LMS_Broker'
 limit 10
 
 
+-- send wa to resgined_staff's SP by IT-system
+	
+select -- count(sp.name) -- sp.name, tmsp.no_of_all_introduce
+concat('856',SUBSTRING(sp.broker_tel, 3)) `WHATSAPP`,
+CONCAT('ສະບາຍດີ! ທ່ານ ',SUBSTRING(sp.broker_tel, 2),' ທີ່ຮັກແພງ.
+ 
+ພວກເຮົາຢາກຖືໂອກາດນີ້ ສະແດງຄວາມຂອບໃຈມາຍັງທ່ານອີກຄັ້ງສຳລັບລູກຄ້າທີ່ທ່ານໄດ້ແນະນຳໃຫ້ພວກເຮົາໃນອະດີດ, ມັນເປັນຄວາມຍິນດີທີ່ໄດ້ຮ່ວມງານກັນ ແລະ ຮ່ວມມືຕະຫຼອດມາ.
+
+ພວກເຮົາສັງເກດວ່າຊ່ວງນີ້ ທ່ານຍັງບໍ່ໄດ້ມີການແນະນຳລູກຄ້າມາຫາເຮົາເທື່ອ, ແລະເຮົາຢາກຈະສອບຖາມວ່າມີຂໍ້ມູນຫຍັງທີ່ທ່ານຕ້ອງການເພີ່ມເຕີມບໍ ຫຼື ຍັງເງຶ່ອນໄຂໃດບໍຊັດເຈນ ທ່ານສາມາດໂທຫາ ຫຼື ແຊັດຫາໄດ້ເດີ ພວກເຮົາຍິນດີໃຫ້ຂໍ້ມູນທີ່ເປັນປະໂຫຍດ ເພື່ອໃຫ້ທານສາມາດແນະນຳຕໍ່ໃຫ້ລູກຄ້າໄດ້. 
+
+ຂໍຂອບໃຈອີກຄັ້ງ, ພວກເຮົາກຳລັງລໍຖ້າຂ່າວດີຈາກທ່ານ, ຫວັງຢ່າງຍິ່ງວ່າພວກເຮົາຈະໄດ້ຮ່ວມງານກັນອີກຄັ້ງໜຶ່ງ ແລະ ຮ່ວມມືກັນຕະຫຼອດໄປ
+'
+) 
+'BODY',
+sp.name as 'custom_id'
+from tabsme_Sales_partner sp
+left join (select refer_id, count(*) as `no_of_all_introduce` from temp_sme_Sales_partner group by refer_id) tmsp on sp.refer_id = tmsp.refer_id
+left join sme_org sme on (case when locate(' ', sp.owner_staff) = 0 then sp.owner_staff else left(sp.owner_staff, locate(' ', sp.owner_staff)-1) end = sme.staff_no)
+where sp.refer_type = 'LMS_Broker'
+and sme.staff_no is null 
+and tmsp.no_of_all_introduce >= 5
+-- and tmsp.no_of_all_introduce >= 3
+ORDER by tmsp.no_of_all_introduce DESC
+
+SELECT sp.name, sp.owner_staff, sp.current_staff -- , sme.staff_no 
+from tabsme_Sales_partner sp 
+left join sme_org sme on (case when locate(' ', sp.owner_staff) = 0 then sp.owner_staff else left(sp.owner_staff, locate(' ', sp.owner_staff)-1) end = sme.staff_no)
+where sp.refer_type = 'LMS_Broker'
+ and sme.staff_no is null
+order by sp.name
 
