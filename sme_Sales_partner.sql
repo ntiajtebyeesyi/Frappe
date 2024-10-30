@@ -190,7 +190,11 @@ where row_numbers > 1
 
 
 
-
+select sp.name, tmsp.no_of_all_introduce 
+from tabsme_Sales_partner sp
+left join (select refer_id, count(*) as `no_of_all_introduce` from temp_sme_Sales_partner group by refer_id) tmsp on sp.refer_id = tmsp.refer_id
+where sp.refer_type = 'LMS_Broker'
+limit 10
 
 
 
